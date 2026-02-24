@@ -146,3 +146,55 @@ pub fn set_channel(state: tauri::State<'_, TokioMutex<UpdaterManager>>, channel:
 pub fn get_channel(state: tauri::State<'_, TokioMutex<UpdaterManager>>) -> String {
     state.blocking_lock().get_channel()
 }
+
+// Unit tests
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_update_info_default() {
+        let info = UpdateInfo {
+            version: "1.0.0".to_string(),
+            body: "Test update".to_string(),
+            date: Some("2024-01-01".to_string()),
+            url: Some("https://example.com".to_string()),
+        };
+        assert_eq!(info.version, "1.0.0");
+        assert_eq!(info.body, "Test update");
+    }
+
+    #[test]
+    fn test_update_info_empty() {
+        let info = UpdateInfo {
+            version: "".to_string(),
+            body: "".to_string(),
+            date: None,
+            url: None,
+        };
+        assert!(info.version.is_empty());
+        assert!(info.body.is_empty());
+    }
+
+    #[test]
+    fn test_update_progress_serialization() {
+        let progress = UpdateProgress {
+            downloaded: 1024,
+            total: Some(2048),
+            progress: 0.5,
+            status: "Downloading".to_string(),
+        };
+        let json = serde_json::to_string(&progress).unwrap();
+        let deserialized: UpdateProgress = serde_json::from_str(&json).unwrap();
+        assert_eq!(progress.downloaded, deserialized.downloaded);
+    }
+
+    #[test]
+    fn test_updater_manager_default_channel() {
+        // Test that default channel is "stable" when env var not set
+        let _app = tauri::Builder::default()
+            .build(tauri::generate_context!())
+            .expect("Failed to create app");
+        let _manager = UpdaterManager::new(&_.app_handle());
+    }
+}

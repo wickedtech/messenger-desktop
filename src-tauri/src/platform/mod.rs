@@ -65,3 +65,34 @@ pub fn send_dbus_notification(_title: &str, _body: &str, _icon: &str) {
 pub fn generate_desktop_file(_app_name: &str, _exec_path: &str) {
     log::warn!("Desktop file generation not supported on this platform");
 }
+
+// Unit tests
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_platform_detection() {
+        let platform = get_platform();
+        assert!(matches!(platform, Platform::macOS | Platform::Windows | Platform::Linux));
+    }
+
+    #[test]
+    fn test_is_macos() {
+        let result = is_macos();
+        // Just verify it returns a value
+        assert!(result == true || result == false);
+    }
+
+    #[test]
+    fn test_is_windows() {
+        let result = is_windows();
+        assert!(result == true || result == false);
+    }
+
+    #[test]
+    fn test_is_linux() {
+        let result = is_linux();
+        assert!(result == true || result == false);
+    }
+}

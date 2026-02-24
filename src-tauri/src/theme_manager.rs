@@ -172,3 +172,44 @@ pub fn current_theme_name(
         Theme::Custom(_) => "custom",
     }.to_string())
 }
+
+// Unit tests
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_theme_enum_deserialization() {
+        let light: Theme = serde_json::from_str("\"light\"").unwrap();
+        assert_eq!(light, Theme::Light);
+        
+        let dark: Theme = serde_json::from_str("\"dark\"").unwrap();
+        assert_eq!(dark, Theme::Dark);
+    }
+
+    #[test]
+    fn test_theme_manager_get_themes() {
+        let themes = ThemeManager::get_themes();
+        assert!(themes.contains(&"light".to_string()));
+        assert!(themes.contains(&"dark".to_string()));
+        assert!(themes.contains(&"darker".to_string()));
+        assert!(themes.contains(&"oled-black".to_string()));
+    }
+
+    #[test]
+    fn test_theme_manager_current_theme() {
+        let app = tauri::Builder::default()
+            .build(tauri::generate_context!())
+            .expect("Failed to create app");
+        let manager = ThemeManager::new(&app.app_handle());
+        let theme = manager.current_theme();
+        assert_eq!(theme, &Theme::Light);
+    }
+
+    #[test]
+    fn test_theme_manager_dark_css() {
+        let dark_css = ThemeManager::get_css(&Theme::Dark);
+        assert!(dark_css.contains("background:#1a1a2e"));
+        assert!(dark_css.contains("color:#e0e0e0"));
+    }
+}

@@ -244,3 +244,54 @@ pub fn delete_media_file_command(state: tauri::State<MediaManager>, id: String) 
     state.delete_media_file(&id)
         .map_err(|e| e.to_string())
 }
+
+// Unit tests
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_media_permissions_default() {
+        let permissions = MediaPermissions {
+            camera: false,
+            microphone: false,
+        };
+        assert!(!permissions.camera);
+        assert!(!permissions.microphone);
+    }
+
+    #[test]
+    fn test_media_permissions_clone() {
+        let permissions = MediaPermissions {
+            camera: true,
+            microphone: true,
+        };
+        let cloned = permissions.clone();
+        assert!(cloned.camera);
+        assert!(cloned.microphone);
+    }
+
+    #[test]
+    fn test_media_file_serialization() {
+        let file = MediaFile {
+            id: "test-id".to_string(),
+            name: "test.jpg".to_string(),
+            path: PathBuf::from("/test/path.jpg"),
+            size: 1024,
+            mime_type: "image/jpeg".to_string(),
+            is_image: true,
+            is_video: false,
+            is_audio: false,
+        };
+        let json = serde_json::to_string(&file).unwrap();
+        let deserialized: MediaFile = serde_json::from_str(&json).unwrap();
+        assert_eq!(file.id, deserialized.id);
+    }
+
+    #[test]
+    fn test_theme_manager_get_themes() {
+        let themes = ThemeManager::get_themes();
+        assert!(themes.contains(&"dark".to_string()));
+        assert!(themes.contains(&"light".to_string()));
+    }
+}

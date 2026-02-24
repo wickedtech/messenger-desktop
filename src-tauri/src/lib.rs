@@ -90,7 +90,7 @@ pub fn run() {
             app.manage(tokio::sync::Mutex::new(updater));
             app.manage(tray);
             app.manage(window_manager);
-            app.manage(Mutex::new(shortcut_manager));
+            app.manage(std::sync::Mutex::new(shortcut_manager));
 
             // Initialize platform-specific features
             platform::init(&handle);

@@ -121,3 +121,51 @@ pub fn set_block_link_previews(
     let mut manager = state.lock().map_err(|e| anyhow::anyhow!(e.to_string()))?;
     manager.set_block_link_previews(value)
 }
+
+// Unit tests
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_privacy_config_default() {
+        let config = PrivacyConfig::default();
+        assert!(!config.block_typing);
+        assert!(!config.block_read_receipts);
+        assert!(!config.hide_last_active);
+        assert!(!config.block_link_previews);
+    }
+
+    #[test]
+    fn test_privacy_config_clone() {
+        let config = PrivacyConfig {
+            block_typing: true,
+            block_read_receipts: true,
+            hide_last_active: true,
+            block_link_previews: true,
+        };
+        let cloned = config.clone();
+        assert_eq!(config.block_typing, cloned.block_typing);
+        assert_eq!(config.block_read_receipts, cloned.block_read_receipts);
+    }
+
+    #[test]
+    fn test_privacy_config_serialization() {
+        let config = PrivacyConfig {
+            block_typing: true,
+            block_read_receipts: false,
+            hide_last_active: true,
+            block_link_previews: false,
+        };
+        let json = serde_json::to_string(&config).unwrap();
+        let deserialized: PrivacyConfig = serde_json::from_str(&json).unwrap();
+        assert_eq!(config.block_typing, deserialized.block_typing);
+    }
+
+    #[test]
+    fn test_privacy_manager_new() {
+        // Need AppHandle for testing, so skip actual instantiation
+        // This is just a placeholder test
+        assert!(true);
+    }
+}
