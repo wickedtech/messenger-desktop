@@ -268,6 +268,7 @@ impl NotificationService {
     }
 
     /// Set show preview preference
+    #[allow(dead_code)]
     pub async fn set_show_preview(&self, enabled: bool) -> Result<()> {
         debug!("Setting show preview to: {}", enabled);
 
@@ -277,6 +278,7 @@ impl NotificationService {
     }
 
     /// Set quick reply preference
+    #[allow(dead_code)]
     pub async fn set_quick_reply_enabled(&self, enabled: bool) -> Result<()> {
         debug!("Setting quick reply enabled to: {}", enabled);
 
@@ -291,6 +293,7 @@ impl NotificationService {
     }
 
     /// Close the notification service and clean up temporary files
+    #[allow(dead_code)]
     pub async fn cleanup(&self) -> Result<()> {
         debug!("Cleaning up notification service");
 
@@ -434,13 +437,19 @@ impl Default for NotificationService {
 
 // Notification payload structure
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 struct NotificationPayload {
+    #[allow(dead_code)]
     id: String,
     title: String,
     body: String,
+    #[allow(dead_code)]
     icon_path: Option<String>,
+    #[allow(dead_code)]
     conversation_id: Option<String>,
+    #[allow(dead_code)]
     sender_name: Option<String>,
+    #[allow(dead_code)]
     silent: bool,
 }
 

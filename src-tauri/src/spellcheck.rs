@@ -11,14 +11,20 @@ use anyhow::{Context, Result};
 
 /// Spellcheck manager state.
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct SpellcheckManager {
+    #[allow(dead_code)]
     app: Arc<AppHandle>,
+    #[allow(dead_code)]
     enabled: bool,
+    #[allow(dead_code)]
     language: String,
     // hunspell: Mutex<Option<Hunspell>>, // Disabled due to compilation issues
+    #[allow(dead_code)]
     dictionaries_dir: PathBuf,
 }
 
+#[allow(dead_code)]
 impl SpellcheckManager {
     /// Create a new SpellcheckManager.
     pub fn new(app: &AppHandle) -> Result<Self> {
@@ -113,6 +119,7 @@ impl SpellcheckManager {
 
 /// Tauri command: Enable spellcheck.
 #[tauri::command]
+#[allow(dead_code)]
 pub fn enable_spellcheck(_state: tauri::State<SpellcheckManager>) -> Result<(), String> {
     // Disabled due to hunspell issues
     Ok(())
@@ -120,12 +127,14 @@ pub fn enable_spellcheck(_state: tauri::State<SpellcheckManager>) -> Result<(), 
 
 /// Tauri command: Disable spellcheck.
 #[tauri::command]
+#[allow(dead_code)]
 pub fn disable_spellcheck(_state: tauri::State<SpellcheckManager>) {
     // Disabled due to hunspell issues
 }
 
 /// Tauri command: Set spellcheck language.
 #[tauri::command]
+#[allow(dead_code)]
 pub fn set_spellcheck_language(_state: tauri::State<SpellcheckManager>, _lang: String) -> Result<(), String> {
     // Disabled due to hunspell issues
     Ok(())
@@ -133,24 +142,28 @@ pub fn set_spellcheck_language(_state: tauri::State<SpellcheckManager>, _lang: S
 
 /// Tauri command: Get available spellcheck languages.
 #[tauri::command]
+#[allow(dead_code)]
 pub fn get_available_languages() -> Vec<String> {
     SpellcheckManager::get_available_languages()
 }
 
 /// Tauri command: Check if a word is misspelled.
 #[tauri::command]
+#[allow(dead_code)]
 pub fn is_misspelled(state: tauri::State<SpellcheckManager>, word: String) -> bool {
     state.is_misspelled(&word)
 }
 
 /// Tauri command: Get suggestions for a misspelled word.
 #[tauri::command]
+#[allow(dead_code)]
 pub fn get_suggestions(state: tauri::State<SpellcheckManager>, word: String) -> Vec<String> {
     state.get_suggestions(&word)
 }
 
 /// Tauri command: Check a text for misspelled words.
 #[tauri::command]
+#[allow(dead_code)]
 pub fn check_text(state: tauri::State<SpellcheckManager>, text: String) -> Vec<(usize, usize, String)> {
     state.check_text(&text)
 }

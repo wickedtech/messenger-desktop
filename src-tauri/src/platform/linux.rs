@@ -16,6 +16,7 @@ pub fn init(_app: &AppHandle) {
 /// - `title`: Notification title.
 /// - `body`: Notification body text.
 /// - `icon`: Icon name or path.
+#[allow(dead_code)]
 pub fn send_dbus_notification(title: &str, body: &str, icon: &str) {
     let result = Command::new("notify-send")
         .arg("--app-name=Messenger Desktop")
@@ -32,6 +33,7 @@ pub fn send_dbus_notification(title: &str, body: &str, icon: &str) {
 /// Generate a desktop entry file for the application.
 /// - `app_name`: Application name (e.g., "Messenger Desktop").
 /// - `exec_path`: Path to the executable.
+#[allow(dead_code)]
 pub fn generate_desktop_file(app_name: &str, exec_path: &str) {
     let home = home_dir().expect("Failed to get home directory");
     let desktop_dir = home.join(".local/share/applications");

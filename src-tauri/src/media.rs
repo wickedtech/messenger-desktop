@@ -6,7 +6,6 @@ use tauri::Manager;
 use serde::{Serialize, Deserialize};
 use std::path::{Path, PathBuf};
 use std::fs;
-use std::io::Write;
 use anyhow::{Context, Result};
 use uuid::Uuid;
 

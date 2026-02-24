@@ -40,10 +40,13 @@ impl Default for WindowState {
 
 /// Window manager state
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct WindowManagerState {
     pub window_state: WindowState,
+    #[allow(dead_code)]
     pub default_window_state: WindowState,
     pub zoom_level: f64,
+    #[allow(dead_code)]
     pub saved_positions: Vec<PositionHistory>,
 }
 
@@ -143,6 +146,7 @@ impl WindowManager {
     }
 
     /// Update window state
+    #[allow(dead_code)]
     pub async fn update_window_state(&self, update: WindowState) -> Result<()> {
         debug!("Updating window state");
         
@@ -284,6 +288,7 @@ impl WindowManager {
     }
 
     /// Set window position
+    #[allow(dead_code)]
     pub async fn set_position(&self, x: i32, y: i32) -> Result<()> {
         debug!("Setting window position to: ({}, {})", x, y);
         
@@ -308,6 +313,7 @@ impl WindowManager {
     }
 
     /// Set window size
+    #[allow(dead_code)]
     pub async fn set_size(&self, width: i32, height: i32) -> Result<()> {
         debug!("Setting window size to: {}x{}", width, height);
         
@@ -372,6 +378,7 @@ impl WindowManager {
     }
 
     /// Close the window manager and save state
+    #[allow(dead_code)]
     pub async fn cleanup(&self) -> Result<()> {
         debug!("Cleaning up window manager");
         

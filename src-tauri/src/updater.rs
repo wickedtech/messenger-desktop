@@ -19,6 +19,7 @@ pub struct UpdateInfo {
 
 /// Update progress.
 #[derive(Serialize, Clone, Debug)]
+#[allow(dead_code)]
 pub struct UpdateProgress {
     pub downloaded: u64,
     pub total: Option<u64>,
@@ -29,10 +30,12 @@ pub struct UpdateProgress {
 /// Updater manager state.
 pub struct UpdaterManager {
     app: AppHandle,
+    #[allow(dead_code)]
     pub channel: String,
     last_check: std::sync::Mutex<Option<u64>>,
 }
 
+#[allow(dead_code)]
 impl UpdaterManager {
     /// Create a new UpdaterManager.
     pub fn new(app: &AppHandle) -> Self {
@@ -73,26 +76,31 @@ impl UpdaterManager {
     }
 
     /// Get the current app version.
+    #[allow(dead_code)]
     pub fn get_current_version(&self) -> String {
         env!("CARGO_PKG_VERSION").to_string()
     }
 
     /// Get the last update check time.
+    #[allow(dead_code)]
     pub fn get_last_check_time(&self) -> Option<u64> {
         *self.last_check.lock().unwrap()
     }
 
     /// Set the release channel.
+    #[allow(dead_code)]
     pub fn set_channel(&mut self, channel: &str) {
         self.channel = channel.to_string();
     }
 
     /// Get the current release channel.
+    #[allow(dead_code)]
     pub fn get_channel(&self) -> String {
         self.channel.clone()
     }
 
     /// Check if an update is available (cached).
+    #[allow(dead_code)]
     pub fn is_update_available(&self) -> bool {
         // Placeholder for cached update check logic
         false
@@ -113,24 +121,28 @@ pub async fn install_update(state: tauri::State<'_, TokioMutex<UpdaterManager>>)
 
 /// Tauri command: Get the current app version.
 #[tauri::command]
+#[allow(dead_code)]
 pub fn get_current_version(state: tauri::State<'_, TokioMutex<UpdaterManager>>) -> String {
     state.blocking_lock().get_current_version()
 }
 
 /// Tauri command: Get the last update check time.
 #[tauri::command]
+#[allow(dead_code)]
 pub fn get_last_check_time(state: tauri::State<'_, TokioMutex<UpdaterManager>>) -> Option<u64> {
     state.blocking_lock().get_last_check_time()
 }
 
 /// Tauri command: Set the release channel.
 #[tauri::command]
+#[allow(dead_code)]
 pub fn set_channel(state: tauri::State<'_, TokioMutex<UpdaterManager>>, channel: String) {
     state.blocking_lock().set_channel(&channel);
 }
 
 /// Tauri command: Get the current release channel.
 #[tauri::command]
+#[allow(dead_code)]
 pub fn get_channel(state: tauri::State<'_, TokioMutex<UpdaterManager>>) -> String {
     state.blocking_lock().get_channel()
 }

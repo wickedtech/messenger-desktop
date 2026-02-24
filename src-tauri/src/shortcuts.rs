@@ -23,6 +23,7 @@ impl ShortcutManager {
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub fn unregister_all(&self) {
         // Cleanup
     }

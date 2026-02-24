@@ -47,6 +47,7 @@ impl PrivacyManager {
         self.apply()
     }
 
+    #[allow(dead_code)]
     pub fn set_block_link_previews(&mut self, value: bool) -> tauri::Result<()> {
         self.config.block_link_previews = value;
         self.apply()
@@ -112,6 +113,7 @@ pub fn set_hide_last_active(
 }
 
 #[tauri::command]
+#[allow(dead_code)]
 pub fn set_block_link_previews(
     state: tauri::State<std::sync::Mutex<PrivacyManager>>,
     value: bool,
