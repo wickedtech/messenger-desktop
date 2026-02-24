@@ -1,4 +1,5 @@
 use tauri::Manager;
+use std::sync::Mutex;
 
 // Import all the command functions
 use crate::notifications::{
