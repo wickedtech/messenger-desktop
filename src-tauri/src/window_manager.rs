@@ -10,7 +10,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use tracing::{debug, error, info, warn};
+use tracing::{debug, info, warn};
 
 /// Window state for persistence
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
@@ -277,7 +277,7 @@ impl WindowManager {
         // In a real implementation, this would toggle the window fullscreen state
         // window.set_fullscreen(fullscreen)?;
         
-        let mut state = self.state.write().await;
+        let state = self.state.write().await;
         
         info!("Fullscreen toggle requested");
         Ok(!state.window_state.maximized) // Placeholder

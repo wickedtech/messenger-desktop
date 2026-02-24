@@ -27,8 +27,6 @@ pub use windows::*;
 
 #[cfg(target_os = "linux")]
 mod linux;
-#[cfg(target_os = "linux")]
-pub use linux::*;
 
 /// Stub for unsupported platforms.
 #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]

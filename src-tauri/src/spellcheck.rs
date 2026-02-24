@@ -3,9 +3,9 @@
 
 use tauri::AppHandle;
 use tauri::{Emitter, Manager};
-use serde::{Serialize, Deserialize};
+use serde::Serialize;
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use anyhow::{Context, Result};
 // use hunspell::Hunspell; // Disabled due to compilation issues
 
@@ -83,12 +83,12 @@ impl SpellcheckManager {
     }
     
     /// Check if a word is misspelled.
-    pub fn is_misspelled(&self, word: &str) -> bool {
+    pub fn is_misspelled(&self, _word: &str) -> bool {
         false // Disabled due to hunspell compilation issues
     }
     
     /// Get suggestions for a misspelled word.
-    pub fn get_suggestions(&self, word: &str) -> Vec<String> {
+    pub fn get_suggestions(&self, _word: &str) -> Vec<String> {
         vec![] // Disabled due to hunspell compilation issues
     }
     
@@ -113,20 +113,20 @@ impl SpellcheckManager {
 
 /// Tauri command: Enable spellcheck.
 #[tauri::command]
-pub fn enable_spellcheck(state: tauri::State<SpellcheckManager>) -> Result<(), String> {
+pub fn enable_spellcheck(_state: tauri::State<SpellcheckManager>) -> Result<(), String> {
     // Disabled due to hunspell issues
     Ok(())
 }
 
 /// Tauri command: Disable spellcheck.
 #[tauri::command]
-pub fn disable_spellcheck(state: tauri::State<SpellcheckManager>) {
+pub fn disable_spellcheck(_state: tauri::State<SpellcheckManager>) {
     // Disabled due to hunspell issues
 }
 
 /// Tauri command: Set spellcheck language.
 #[tauri::command]
-pub fn set_spellcheck_language(state: tauri::State<SpellcheckManager>, lang: String) -> Result<(), String> {
+pub fn set_spellcheck_language(_state: tauri::State<SpellcheckManager>, _lang: String) -> Result<(), String> {
     // Disabled due to hunspell issues
     Ok(())
 }

@@ -9,7 +9,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use tracing::{debug, error, info, warn};
+use tracing::{debug, info, warn};
 
 /// Notification data received from JavaScript injection
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
@@ -152,7 +152,7 @@ impl NotificationService {
     async fn download_and_save_icon(
         &self,
         url: &str,
-        notification_id: &str,
+        _notification_id: &str,
     ) -> Result<Option<String>> {
         debug!("Downloading icon from: {}", url);
 
@@ -171,7 +171,7 @@ impl NotificationService {
     }
 
     /// Check if current time is within DND schedule
-    async fn is_in_dnd_schedule(&self, schedule: &DNDSchedule) -> bool {
+    async fn is_in_dnd_schedule(&self, _schedule: &DNDSchedule) -> bool {
         // Parse start and end times
         // Compare with current time
         

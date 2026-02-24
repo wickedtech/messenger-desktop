@@ -3,11 +3,10 @@
 
 use tauri::{AppHandle, Manager, Emitter};
 use serde::{Serialize, Deserialize};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::fs;
 use uuid::Uuid;
 use anyhow::{Context, Result};
-use log::{info, error};
 use image::io::Reader as ImageReader;
 use image::imageops::FilterType;
 

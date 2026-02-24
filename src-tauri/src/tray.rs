@@ -1,7 +1,6 @@
 use tauri::{AppHandle, Manager, Emitter};
 use tauri::tray::{TrayIconBuilder, TrayIconEvent, TrayIconId};
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
-use std::sync::Mutex;
 
 const TRAY_ID: &str = "messenger-tray";
 
@@ -14,7 +13,7 @@ impl TrayManager {
         let menu = Self::build_menu(app)?;
 
         let app_clone = app.clone();
-        let tray_id = TrayIconId::new(TRAY_ID);
+        let _tray_id = TrayIconId::new(TRAY_ID);
         let builder = TrayIconBuilder::new()
             .menu(&menu)
             .show_menu_on_left_click(true)

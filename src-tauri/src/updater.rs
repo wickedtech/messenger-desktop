@@ -1,13 +1,12 @@
 //! Updater manager for Tauri app.
 //! Handles update checks, downloads, and installations.
 
-use tauri::{AppHandle, Manager, Emitter};
-use tauri_plugin_updater::{Updater, UpdaterExt};
+use tauri::AppHandle;
+use tauri_plugin_updater::UpdaterExt;
 use serde::Serialize;
 use tokio::sync::Mutex as TokioMutex;
 use std::time::{SystemTime, UNIX_EPOCH};
-use anyhow::{Context, Result};
-use log::{info, error};
+use anyhow::Result;
 
 /// Update information.
 #[derive(Serialize, Clone, Debug)]
