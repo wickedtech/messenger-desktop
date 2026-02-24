@@ -110,6 +110,7 @@ fn inject_file_to_messenger(window: &WebviewWindow, file_info: &FileDropInfo) ->
 }
 
 /// Listen for drag-drop events in the window.
+#[allow(dead_code)]
 pub fn setup_drag_drop_handler(window: &WebviewWindow) {
     let window_clone = window.to_owned();
     window.on_window_event(move |event| {
@@ -150,6 +151,7 @@ pub fn handle_file_drop(state: tauri::State<tauri::AppHandle>, paths: Vec<String
 
 /// Tauri command: Validate dropped files.
 #[tauri::command]
+#[allow(dead_code)]
 pub fn validate_files(paths: Vec<String>) -> Vec<FileDropInfo> {
     paths
         .into_iter()

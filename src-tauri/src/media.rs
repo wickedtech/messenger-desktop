@@ -32,12 +32,14 @@ pub struct MediaFile {
 
 /// Media manager state.
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct MediaManager {
     app: AppHandle,
     permissions: MediaPermissions,
     media_dir: PathBuf,
 }
 
+#[allow(dead_code)]
 impl MediaManager {
     /// Create a new MediaManager.
     pub fn new(app: &AppHandle) -> Result<Self> {
@@ -192,6 +194,7 @@ impl MediaManager {
 
 /// Tauri command: Get media permissions.
 #[tauri::command]
+#[allow(dead_code)]
 pub fn get_media_permissions(state: tauri::State<MediaManager>) -> MediaPermissions {
     state.get_permissions()
 }
@@ -211,6 +214,7 @@ pub async fn grant_media_permission(state: tauri::State<'_, tokio::sync::Mutex<M
 
 /// Tauri command: Save a media file.
 #[tauri::command]
+#[allow(dead_code)]
 pub async fn save_media_file(
     state: tauri::State<'_, MediaManager>,
     name: String,
@@ -222,6 +226,7 @@ pub async fn save_media_file(
 
 /// Tauri command: Get a media file by ID.
 #[tauri::command]
+#[allow(dead_code)]
 pub fn get_media_file_command(state: tauri::State<MediaManager>, id: String) -> Result<MediaFile, String> {
     state.get_media_file(&id)
         .map_err(|e| e.to_string())
@@ -229,6 +234,7 @@ pub fn get_media_file_command(state: tauri::State<MediaManager>, id: String) -> 
 
 /// Tauri command: Generate a preview for a media file.
 #[tauri::command]
+#[allow(dead_code)]
 pub fn generate_preview_command(state: tauri::State<MediaManager>, id: String) -> Result<PathBuf, String> {
     state.generate_preview(&id)
         .map_err(|e| e.to_string())
@@ -236,6 +242,7 @@ pub fn generate_preview_command(state: tauri::State<MediaManager>, id: String) -
 
 /// Tauri command: Delete a media file by ID.
 #[tauri::command]
+#[allow(dead_code)]
 pub fn delete_media_file_command(state: tauri::State<MediaManager>, id: String) -> Result<(), String> {
     state.delete_media_file(&id)
         .map_err(|e| e.to_string())

@@ -66,7 +66,6 @@ impl UpdaterManager {
     }
 
     /// Install an update.
-    /// Install an update.
     pub async fn install_update(&self) -> Result<()> {
         // Tauri 2 updater API has changed significantly
         // TODO: Implement proper updater for Tauri 2

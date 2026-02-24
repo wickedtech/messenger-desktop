@@ -47,14 +47,18 @@ pub struct DNDSchedule {
 
 /// Notification service state
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct NotificationState {
     pub settings: NotificationSettings,
+    #[allow(dead_code)]
     pub temporary_icons: Vec<PathBuf>,
 }
 
 /// Native Notification Service - manages OS-native notifications
+#[allow(dead_code)]
 pub struct NotificationService {
     state: Arc<RwLock<NotificationState>>,
+    #[allow(dead_code)]
     app_data_dir: PathBuf,
 }
 
