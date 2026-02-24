@@ -1,9 +1,14 @@
-//! Media permissions manager for Tauri app.
-//! Handles camera and microphone permissions.
+//! Media handling for Tauri app.
+//! Manages file uploads, downloads, media permissions, and previews.
 
 use tauri::AppHandle;
 use tauri::Manager;
 use serde::{Serialize, Deserialize};
+use std::path::{Path, PathBuf};
+use std::fs;
+use std::io::Write;
+use anyhow::{Context, Result};
+use uuid::Uuid;
 
 /// Media permissions state.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -12,23 +17,47 @@ pub struct MediaPermissions {
     pub microphone: bool,
 }
 
-/// Media manager state.
+/// Media file metadata.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MediaFile {
+    pub id: String,
+    pub name: String,
+    pub path: PathBuf,
+    pub size: u64,
+    pub mime_type: String,
+    pub is_image: bool,
+    pub is_video: bool,
+    pub is_audio: bool,
+}
+
+/// Media manager state.
+#[derive(Debug, Clone)]
 pub struct MediaManager {
     app: AppHandle,
     permissions: MediaPermissions,
+    media_dir: PathBuf,
 }
 
 impl MediaManager {
     /// Create a new MediaManager.
-    pub fn new(app: &AppHandle) -> Self {
-        Self {
+    pub fn new(app: &AppHandle) -> Result<Self> {
+        let media_dir = app.path_resolver().app_data_dir()
+            .context("Failed to resolve app data directory")?
+            .join("media");
+        
+        if !media_dir.exists() {
+            fs::create_dir_all(&media_dir)
+                .context("Failed to create media directory")?;
+        }
+        
+        Ok(Self {
             app: app.clone(),
             permissions: MediaPermissions {
                 camera: false,
                 microphone: false,
             },
-        }
+            media_dir,
+        })
     }
     
     /// Setup WebView permissions for messenger.com domain.
@@ -57,6 +86,108 @@ impl MediaManager {
     pub fn get_permissions(&self) -> MediaPermissions {
         self.permissions.clone()
     }
+    
+    /// Save a media file to the app's media directory.
+    pub fn save_media_file(&self, name: &str, data: &[u8]) -> Result<MediaFile> {
+        let ext = Path::new(name)
+            .extension()
+            .and_then(|s| s.to_str())
+            .unwrap_or("bin");
+        
+        let id = Uuid::new_v4().to_string();
+        let file_name = format!("{}.{}", id, ext);
+        let file_path = self.media_dir.join(&file_name);
+        
+        let mut file = fs::File::create(&file_path)
+            .context("Failed to create media file")?;
+        
+        file.write_all(data)
+            .context("Failed to write media file")?;
+        
+        let mime_type = mime_guess::from_path(&file_path).first_or_octet_stream();
+        let size = fs::metadata(&file_path)?.len();
+        
+        Ok(MediaFile {
+            id,
+            name: name.to_string(),
+            path: file_path,
+            size,
+            mime_type: mime_type.to_string(),
+            is_image: mime_type.type_() == "image",
+            is_video: mime_type.type_() == "video",
+            is_audio: mime_type.type_() == "audio",
+        })
+    }
+    
+    /// Get a media file by ID.
+    pub fn get_media_file(&self, id: &str) -> Result<MediaFile> {
+        let entries = fs::read_dir(&self.media_dir)?;
+        for entry in entries {
+            let entry = entry?;
+            let path = entry.path();
+            let file_name = path.file_stem()
+                .and_then(|s| s.to_str())
+                .unwrap_or("")
+                .to_string();
+            
+            if file_name == id {
+                let mime_type = mime_guess::from_path(&path).first_or_octet_stream();
+                let size = fs::metadata(&path)?.len();
+                let name = path.file_name()
+                    .and_then(|s| s.to_str())
+                    .unwrap_or("")
+                    .to_string();
+                
+                return Ok(MediaFile {
+                    id: file_name,
+                    name,
+                    path,
+                    size,
+                    mime_type: mime_type.to_string(),
+                    is_image: mime_type.type_() == "image",
+                    is_video: mime_type.type_() == "video",
+                    is_audio: mime_type.type_() == "audio",
+                });
+            }
+        }
+        anyhow::bail!("Media file not found")
+    }
+    
+    /// Generate a preview for a media file.
+    pub fn generate_preview(&self, id: &str) -> Result<PathBuf> {
+        let media_file = self.get_media_file(id)?;
+        if !media_file.is_image && !media_file.is_video {
+            anyhow::bail!("Preview not supported for this media type");
+        }
+        
+        let preview_dir = self.media_dir.join("previews");
+        if !preview_dir.exists() {
+            fs::create_dir_all(&preview_dir)?;
+        }
+        
+        let preview_path = preview_dir.join(format!("{}.jpg", id));
+        if !preview_path.exists() {
+            // Placeholder for actual preview generation logic
+            // In a real implementation, this would use a library like `image` or `ffmpeg`
+            fs::File::create(&preview_path)?;
+        }
+        
+        Ok(preview_path)
+    }
+    
+    /// Delete a media file by ID.
+    pub fn delete_media_file(&self, id: &str) -> Result<()> {
+        let media_file = self.get_media_file(id)?;
+        fs::remove_file(media_file.path)?;
+        
+        // Delete preview if it exists
+        let preview_path = self.media_dir.join("previews").join(format!("{}.jpg", id));
+        if preview_path.exists() {
+            fs::remove_file(preview_path)?;
+        }
+        
+        Ok(())
+    }
 }
 
 /// Tauri command: Get media permissions.
@@ -76,4 +207,36 @@ pub fn grant_media_permission(state: tauri::State<MediaManager>, permission_type
             false
         }
     }
+}
+
+/// Tauri command: Save a media file.
+#[tauri::command]
+pub async fn save_media_file(
+    state: tauri::State<'_, MediaManager>,
+    name: String,
+    data: Vec<u8>,
+) -> Result<MediaFile, String> {
+    state.save_media_file(&name, &data)
+        .map_err(|e| e.to_string())
+}
+
+/// Tauri command: Get a media file by ID.
+#[tauri::command]
+pub fn get_media_file_command(state: tauri::State<MediaManager>, id: String) -> Result<MediaFile, String> {
+    state.get_media_file(&id)
+        .map_err(|e| e.to_string())
+}
+
+/// Tauri command: Generate a preview for a media file.
+#[tauri::command]
+pub fn generate_preview_command(state: tauri::State<MediaManager>, id: String) -> Result<PathBuf, String> {
+    state.generate_preview(&id)
+        .map_err(|e| e.to_string())
+}
+
+/// Tauri command: Delete a media file by ID.
+#[tauri::command]
+pub fn delete_media_file_command(state: tauri::State<MediaManager>, id: String) -> Result<(), String> {
+    state.delete_media_file(&id)
+        .map_err(|e| e.to_string())
 }
