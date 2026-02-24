@@ -56,7 +56,7 @@ pub fn show_toast_notification(title: &str, body: &str) {
 /// Get the application window handle.
 /// Returns HWND or null if not found.
 fn get_app_window_handle(_app: &AppHandle) -> HWND {
-    HWND(0) // Placeholder - actual implementation would use app.get_window()
+    HWND(std::ptr::null_mut()) // Placeholder - actual implementation would use app.get_window()
 }
 
 // Required dependency note:

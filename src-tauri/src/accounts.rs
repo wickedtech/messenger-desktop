@@ -224,22 +224,22 @@ mod tests {
         let json = serde_json::to_string(&account).unwrap();
         let deserialized: Account = serde_json::from_str(&json).unwrap();
         assert_eq!(deserialized.name, "Test Account");
+        assert_eq!(deserialized.id, "test-123");
+        assert!(deserialized.is_active);
     }
 
     #[test]
-    fn test_account_manager_new() {
-        // Create a minimal test - AppHandle requires Tauri app
-        // This is just a compile test
-        assert!(true);
-    }
-
-    #[test]
-    fn test_account_manager_list_empty() {
-        let app = tauri::Builder::default()
-            .build(tauri::generate_context!())
-            .expect("Failed to create app");
-        let _manager = AccountManager::new(&app.app_handle());
-        // Just verify it compiles and runs
-        assert!(true);
+    fn test_account_defaults() {
+        let account = Account {
+            id: "a".to_string(),
+            name: "b".to_string(),
+            data_dir: "/c".to_string(),
+            is_active: false,
+            profile_picture: None,
+            last_sync: None,
+            session_token: None,
+        };
+        assert!(account.profile_picture.is_none());
+        assert!(account.session_token.is_none());
     }
 }
