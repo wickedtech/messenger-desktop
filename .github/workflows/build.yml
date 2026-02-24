@@ -48,10 +48,10 @@ jobs:
       - name: Cargo test
         run: cd src-tauri && cargo test
 
-      - name: Build Tauri app (no bundles)
+      - name: Build Tauri app (no bundle)
         uses: tauri-apps/tauri-action@v0
         with:
-          args: --bundles none
+          args: --no-bundle
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
