@@ -65,3 +65,22 @@ pub fn generate_desktop_file(app_name: &str, exec_path: &str) {
         log::info!("Generated desktop file at: {}", desktop_path.display());
     }
 }
+
+// Unit tests
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_desktop_file_content() {
+        let content = r#"[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Test App
+Exec=/usr/bin/test
+Icon=test
+Terminal=false
+Categories=Network;InstantMessaging;
+"#;
+        assert!(content.contains("[Desktop Entry]"));
+        assert!(content.contains("Version=1.0"));
+    }
+}

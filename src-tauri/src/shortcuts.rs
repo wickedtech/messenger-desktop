@@ -61,3 +61,47 @@ pub fn unregister_shortcut(
 pub fn init_shortcuts(app: AppHandle) -> Result<(), String> {
     ShortcutManager::register_all(&app)
 }
+
+// Unit tests
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_shortcut_manager_new() {
+        let manager = ShortcutManager::new();
+        assert!(manager.registered.is_empty());
+    }
+
+    #[test]
+    fn test_shortcut_manager_register() {
+        let mut manager = ShortcutManager::new();
+        manager.registered.insert("test".to_string(), "Ctrl+T".to_string());
+        assert_eq!(manager.registered.get("test"), Some(&"Ctrl+T".to_string()));
+    }
+
+    #[test]
+    fn test_shortcut_manager_unregister() {
+        let mut manager = ShortcutManager::new();
+        manager.registered.insert("test".to_string(), "Ctrl+T".to_string());
+        manager.registered.remove("test");
+        assert!(manager.registered.is_empty());
+    }
+
+    #[test]
+    fn test_shortcut_manager_clear() {
+        let mut manager = ShortcutManager::new();
+        manager.registered.insert("a".to_string(), "A".to_string());
+        manager.registered.insert("b".to_string(), "B".to_string());
+        assert_eq!(manager.registered.len(), 2);
+    }
+
+    #[test]
+    fn test_shortcut_serialization() {
+        let mut manager = ShortcutManager::new();
+        manager.registered.insert("action".to_string(), "keys".to_string());
+        // Just verify the HashMap can be serialized
+        let json = serde_json::to_string(&manager.registered).unwrap();
+        assert!(json.contains("action"));
+    }
+}

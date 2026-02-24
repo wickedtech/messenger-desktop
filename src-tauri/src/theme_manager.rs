@@ -1,7 +1,7 @@
 use tauri::{AppHandle, Emitter};
 use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "kebab-case")]
 pub enum Theme {
     Light,
@@ -198,6 +198,7 @@ mod tests {
 
     #[test]
     fn test_theme_manager_current_theme() {
+        use tauri::Manager;
         let app = tauri::Builder::default()
             .build(tauri::generate_context!())
             .expect("Failed to create app");

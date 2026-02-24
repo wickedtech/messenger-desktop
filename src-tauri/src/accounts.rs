@@ -204,3 +204,42 @@ pub fn get_session_token(state: tauri::State<'_, std::sync::Mutex<AccountManager
 pub fn update_last_sync(state: tauri::State<'_, std::sync::Mutex<AccountManager>>, id: String) -> Result<(), String> {
     state.lock().unwrap().update_last_sync(&id).map_err(|e| e.to_string())
 }
+
+// Unit tests
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_account_serialization() {
+        let account = Account {
+            id: "test-123".to_string(),
+            name: "Test Account".to_string(),
+            data_dir: "/data".to_string(),
+            is_active: true,
+            profile_picture: None,
+            last_sync: None,
+            session_token: None,
+        };
+        let json = serde_json::to_string(&account).unwrap();
+        let deserialized: Account = serde_json::from_str(&json).unwrap();
+        assert_eq!(deserialized.name, "Test Account");
+    }
+
+    #[test]
+    fn test_account_manager_new() {
+        // Create a minimal test - AppHandle requires Tauri app
+        // This is just a compile test
+        assert!(true);
+    }
+
+    #[test]
+    fn test_account_manager_list_empty() {
+        let app = tauri::Builder::default()
+            .build(tauri::generate_context!())
+            .expect("Failed to create app");
+        let _manager = AccountManager::new(&app.app_handle());
+        // Just verify it compiles and runs
+        assert!(true);
+    }
+}

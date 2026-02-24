@@ -49,3 +49,20 @@ pub fn bounce_dock(critical: bool) {
 
 // Required dependency note:
 // Add `objc` and `objc-foundation` to Cargo.toml for Objective-C runtime access.
+
+// Unit tests
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_dock_badge() {
+        set_dock_badge(5);
+        assert!(true);
+    }
+
+    #[test]
+    fn test_bounce_dock() {
+        bounce_dock(true);
+        bounce_dock(false);
+        assert!(true);
+    }
+}

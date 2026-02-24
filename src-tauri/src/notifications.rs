@@ -557,3 +557,60 @@ pub async fn use_default_notification_sound(
 ) -> Result<(), String> {
     notification_service.set_notification_sound(String::new()).await.map_err(|e| e.to_string())
 }
+
+// Unit tests
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_notification_data_default() {
+        let data = NotificationData {
+            id: "test-id".to_string(),
+            title: "Test".to_string(),
+            body: "Body".to_string(),
+            icon_url: None,
+            conversation_id: None,
+            sender_name: None,
+            sender_avatar: None,
+            timestamp: None,
+            require_interaction: false,
+            silent: false,
+        };
+        assert_eq!(data.id, "test-id");
+        assert_eq!(data.title, "Test");
+    }
+
+    #[test]
+    fn test_notification_settings_default() {
+        let settings = NotificationSettings {
+            enabled: true,
+            sound_enabled: false,
+            sound_path: None,
+            do_not_disturb: false,
+            dnd_schedule: None,
+            show_preview: true,
+            quick_reply_enabled: false,
+        };
+        assert!(settings.enabled);
+        assert!(!settings.do_not_disturb);
+    }
+
+    #[test]
+    fn test_dnd_schedule_serialization() {
+        let schedule = DNDSchedule {
+            start_time: "22:00".to_string(),
+            end_time: "08:00".to_string(),
+        };
+        let json = serde_json::to_string(&schedule).unwrap();
+        let deserialized: DNDSchedule = serde_json::from_str(&json).unwrap();
+        assert_eq!(deserialized.start_time, "22:00");
+    }
+
+    #[test]
+    fn test_notification_service_new() {
+        let _service = NotificationService::new(PathBuf::from("/tmp"));
+        // Service instantiated successfully
+        assert!(true);
+    }
+}

@@ -3,7 +3,7 @@
 
 use tauri::{WebviewWindow, Manager, Emitter};
 use std::path::{Path, PathBuf};
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 use mime_guess::from_path;
 use log::{info, error};
 
@@ -16,7 +16,7 @@ pub struct FileDropPayload {
 }
 
 /// File drop information.
-#[derive(Serialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct FileDropInfo {
     pub name: String,
     pub path: String,
@@ -160,4 +160,71 @@ pub fn validate_files(paths: Vec<String>) -> Vec<FileDropInfo> {
             process_file(&path).ok()
         })
         .collect()
+}
+
+// Unit tests
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_file_drop_info_serialization() {
+        let info = FileDropInfo {
+            name: "test.jpg".to_string(),
+            path: "/test/path.jpg".to_string(),
+            size: 1024,
+            mime_type: "image/jpeg".to_string(),
+            is_image: true,
+            is_video: false,
+            is_audio: false,
+            is_document: false,
+        };
+        let json = serde_json::to_string(&info).unwrap();
+        let deserialized: FileDropInfo = serde_json::from_str(&json).unwrap();
+        assert_eq!(deserialized.name, "test.jpg");
+    }
+
+    #[test]
+    fn test_process_file() {
+        // Test with a temporary file
+        let temp_dir = std::env::temp_dir();
+        let test_file = temp_dir.join("test.txt");
+        
+        // Create test file
+        std::fs::write(&test_file, "test content").ok();
+        
+        let result = process_file(&test_file);
+        
+        // Clean up
+        let _ = std::fs::remove_file(&test_file);
+        
+        assert!(result.is_ok());
+        let file_info = result.unwrap();
+        assert_eq!(file_info.name, "test.txt");
+    }
+
+    #[test]
+    fn test_file_drop_payload_default() {
+        let payload = FileDropPayload {
+            files: Vec::new(),
+            status: "success".to_string(),
+            error: None,
+        };
+        assert_eq!(payload.status, "success");
+    }
+
+    #[test]
+    fn test_file_drop_info_default() {
+        let info = FileDropInfo {
+            name: "test".to_string(),
+            path: "/test".to_string(),
+            size: 0,
+            mime_type: "text/plain".to_string(),
+            is_image: false,
+            is_video: false,
+            is_audio: false,
+            is_document: true,
+        };
+        assert!(info.is_document);
+    }
 }

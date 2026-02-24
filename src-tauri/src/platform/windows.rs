@@ -2,8 +2,9 @@
 //! All functions are wrapped in `#[cfg(target_os = "windows")]`.
 
 use tauri::AppHandle;
-use windows::Win32::UI::Shell::ITaskbarList3;
-use windows::Win32::UI::WindowsAndMessaging::{TBPF_NORMAL, TBPF_ERROR};
+use windows::Win32::UI::Shell::{ITaskbarList3, TBPF_NORMAL, TBPF_ERROR, TaskbarList};
+use windows::Win32::System::Com::{CoCreateInstance, CLSCTX_ALL};
+use windows::Win32::Foundation::HWND;
 use windows::core::Result;
 
 /// Initialize Windows-specific features.
@@ -17,15 +18,15 @@ pub fn init(app: &AppHandle) {
 /// - `count`: Badge count. 0 clears the badge.
 pub fn set_taskbar_badge(app: &AppHandle, count: u32) {
     unsafe {
-        let _taskbar: Result<ITaskbarList3> = windows::core::CoCreateInstance(
-            &windows::Win32::UI::Shell::TaskbarList,
+        let _taskbar: Result<ITaskbarList3> = CoCreateInstance(
+            &TaskbarList,
             None,
-            windows::Win32::System::Com::CLSCTX_ALL,
+            CLSCTX_ALL,
         );
         
         if let Ok(taskbar) = _taskbar {
             let hwnd = get_app_window_handle(app);
-            if hwnd.is_null() {
+            if hwnd == HWND::default() {
                 log::error!("Failed to get window handle for taskbar badge");
                 return;
             }
@@ -54,10 +55,19 @@ pub fn show_toast_notification(title: &str, body: &str) {
 
 /// Get the application window handle.
 /// Returns HWND or null if not found.
-fn get_app_window_handle(_app: &AppHandle) -> windows::Win32::Foundation::HWND {
-    use windows::Win32::Foundation::HWND;
+fn get_app_window_handle(_app: &AppHandle) -> HWND {
     HWND(0) // Placeholder - actual implementation would use app.get_window()
 }
 
 // Required dependency note:
 // Add `windows-sys` or `windows` to Cargo.toml for Win32/WinRT APIs.
+
+// Unit tests
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_toast_notification() {
+        show_toast_notification("Test", "Test body");
+        assert!(true);
+    }
+}

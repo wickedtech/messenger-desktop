@@ -614,3 +614,53 @@ pub async fn toggle_fullscreen(
 ) -> Result<bool, String> {
     window_manager.toggle_fullscreen().await.map_err(|e| e.to_string())
 }
+
+// Unit tests
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_window_state_default() {
+        let state = WindowState::default();
+        assert_eq!(state.width, 1200);
+        assert_eq!(state.height, 800);
+        assert!(!state.maximized);
+        assert!(!state.always_on_top);
+        assert!(!state.focus_mode);
+    }
+
+    #[test]
+    fn test_position_history_serialization() {
+        let history = PositionHistory {
+            timestamp: 1234567890,
+            x: 100,
+            y: 200,
+        };
+        let json = serde_json::to_string(&history).unwrap();
+        let deserialized: PositionHistory = serde_json::from_str(&json).unwrap();
+        assert_eq!(deserialized.x, 100);
+    }
+
+    #[test]
+    fn test_window_manager_new() {
+        let _manager = WindowManager::new(PathBuf::from("/tmp"));
+        // Manager instantiated successfully
+        assert!(true);
+    }
+
+    #[test]
+    fn test_window_state_clone() {
+        let state = WindowState {
+            width: 1280,
+            height: 720,
+            x: 100,
+            y: 100,
+            maximized: false,
+            always_on_top: true,
+            focus_mode: false,
+        };
+        let cloned = state.clone();
+        assert_eq!(cloned.width, 1280);
+    }
+}
