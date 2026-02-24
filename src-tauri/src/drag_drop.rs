@@ -1,9 +1,8 @@
 //! Drag and drop handler for Tauri app.
 //! Handles file drops, injects files into messenger.com's file input, and validates file types.
 
-use tauri::WebviewWindow;
+use tauri::{WebviewWindow, Manager, Emitter};
 use std::path::{Path, PathBuf};
-use tauri::Manager;
 use serde::Serialize;
 use mime_guess::from_path;
 use log::{info, error};
@@ -112,19 +111,20 @@ fn inject_file_to_messenger(window: &WebviewWindow, file_info: &FileDropInfo) ->
 
 /// Listen for drag-drop events in the window.
 pub fn setup_drag_drop_handler(window: &WebviewWindow) {
+    let window_clone = window.to_owned();
     window.on_window_event(move |event| {
         if let tauri::WindowEvent::DragDrop(event) = event {
             match event {
-                tauri::DragDropEvent::Dropped { paths, .. } => {
-                    let payload = handle_drop(window, paths);
-                    if let Err(e) = window.emit("file-drop", payload) {
+                tauri::DragDropEvent::Drop { paths, .. } => {
+                    let payload = handle_drop(&window_clone, paths.to_vec());
+                    if let Err(e) = window_clone.emit("file-drop", payload) {
                         error!("Failed to emit file-drop event: {}", e);
                     }
                 }
-                tauri::DragDropEvent::Entered { paths, .. } => {
-                    info!("Drag entered with {} files", paths.len());
+                tauri::DragDropEvent::Enter { paths, .. } => {
+                    info!("Drag entered with {} files", paths.to_vec().len());
                 }
-                tauri::DragDropEvent::Left => {
+                tauri::DragDropEvent::Leave => {
                     info!("Drag left");
                 }
                 _ => {}

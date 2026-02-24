@@ -1,18 +1,12 @@
 {
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Messenger Desktop",
+  "version": "0.1.0",
+  "identifier": "com.messenger.desktop",
   "build": {
-    "devPath": "http://localhost:1420",
-    "distDir": "../dist"
+    "frontendDist": "../dist"
   },
-  "package": {
-    "productName": "Messenger Desktop",
-    "version": "0.1.0"
-  },
-  "tauri": {
-    "allowlist": {
-      "shell": {
-        "open": true
-      }
-    },
+  "app": {
     "windows": [
       {
         "title": "Messenger",

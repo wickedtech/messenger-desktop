@@ -32,7 +32,7 @@ pub struct AccountManager {
 impl AccountManager {
     /// Create a new AccountManager.
     pub fn new(app: &AppHandle) -> Self {
-        let accounts = app.state::<tauri_plugin_store::Store>()
+        let accounts = app.state::<tauri_plugin_store::Store<tauri::Wry>>()
             .get("accounts")
             .and_then(|v| serde_json::from_value(v.clone()).ok())
             .unwrap_or_default();
@@ -46,7 +46,7 @@ impl AccountManager {
     /// Add a new account.
     pub fn add_account(&mut self, name: String) -> Result<Account> {
         let id = Uuid::new_v4().to_string();
-        let app_data = self.app.path_resolver().app_data_dir()
+        let app_data = self.app.path().app_data_dir()
             .context("Failed to resolve app data directory")?;
         let data_dir = app_data.join("accounts").join(&id);
         
@@ -146,7 +146,7 @@ impl AccountManager {
     
     /// Save accounts to store.
     fn save(&self) -> Result<()> {
-        self.app.state::<tauri_plugin_store::Store>()
+        self.app.state::<tauri_plugin_store::Store<tauri::Wry>>()
             .set("accounts", serde_json::to_value(&self.accounts)?);
         Ok(())
     }

@@ -1,4 +1,4 @@
-use tauri::{AppHandle, Manager, Emitter, WindowEvent};
+use tauri::{AppHandle, Manager, Emitter};
 use tauri::tray::{TrayIconBuilder, TrayIconEvent, TrayIconId};
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
 use std::sync::Mutex;
@@ -12,18 +12,27 @@ pub struct TrayManager {
 impl TrayManager {
     pub fn new(app: &AppHandle) -> tauri::Result<Self> {
         let menu = Self::build_menu(app)?;
-        
-        let _tray = TrayIconBuilder::new()
-            .icon(app.default_icon()?.clone())
+
+        let app_clone = app.clone();
+        let tray_id = TrayIconId::new(TRAY_ID);
+        let builder = TrayIconBuilder::new()
             .menu(&menu)
-            .menu_on_left_click(true)
+            .show_menu_on_left_click(true)
             .on_menu_event(move |app, event| {
                 Self::handle_menu_event(app, event.id.as_ref());
             })
-            .on_tray_icon_event(|app, event| {
-                Self::handle_event(app, event);
-            })
-            .build(app)?;
+            .on_tray_icon_event(move |_tray, event| {
+                Self::handle_event(&app_clone, &event);
+            });
+
+        // Set icon if available
+        let builder = if let Some(icon) = app.default_window_icon() {
+            builder.icon(icon.clone())
+        } else {
+            builder
+        };
+
+        let _tray = builder.build(app)?;
 
         Ok(Self {
             app: app.clone(),
@@ -62,7 +71,7 @@ impl TrayManager {
             "Messenger".to_string()
         };
 
-        if let Ok(tray) = self.app.tray_by_id(TrayIconId::new(TRAY_ID)) {
+        if let Some(tray) = self.app.tray_by_id(&TrayIconId::new(TRAY_ID)) {
             let _ = tray.set_tooltip(Some(&tooltip));
         }
 
@@ -70,7 +79,7 @@ impl TrayManager {
         let _ = self.app.emit("tray-badge-update", count);
     }
 
-    pub fn handle_event(app: &AppHandle, event: TrayIconEvent) {
+    pub fn handle_event(app: &AppHandle, event: &TrayIconEvent) {
         if let TrayIconEvent::Click { button: tauri::tray::MouseButton::Left, .. } = event {
             if let Some(window) = app.get_webview_window("main") {
                 let is_visible = window.is_visible().unwrap_or(true);
@@ -114,7 +123,7 @@ impl TrayManager {
     }
 
     pub fn set_tooltip(&self, text: &str) {
-        if let Ok(tray) = self.app.tray_by_id(TrayIconId::new(TRAY_ID)) {
+        if let Some(tray) = self.app.tray_by_id(&TrayIconId::new(TRAY_ID)) {
             let _ = tray.set_tooltip(Some(text));
         }
     }

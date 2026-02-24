@@ -41,7 +41,7 @@ pub struct MediaManager {
 impl MediaManager {
     /// Create a new MediaManager.
     pub fn new(app: &AppHandle) -> Result<Self> {
-        let media_dir = app.path_resolver().app_data_dir()
+        let media_dir = app.path().app_data_dir()
             .context("Failed to resolve app data directory")?
             .join("media");
         
@@ -198,13 +198,13 @@ pub fn get_media_permissions(state: tauri::State<MediaManager>) -> MediaPermissi
 
 /// Tauri command: Grant media permission.
 #[tauri::command]
-pub fn grant_media_permission(state: tauri::State<MediaManager>, permission_type: String) -> bool {
+pub async fn grant_media_permission(state: tauri::State<'_, tokio::sync::Mutex<MediaManager>>, permission_type: String) -> Result<bool, String> {
     match permission_type.as_str() {
-        "camera" => state.request_camera(),
-        "microphone" => state.request_microphone(),
+        "camera" => Ok(state.lock().await.request_camera()),
+        "microphone" => Ok(state.lock().await.request_microphone()),
         _ => {
             log::error!("Unknown permission type: {}", permission_type);
-            false
+            Ok(false)
         }
     }
 }

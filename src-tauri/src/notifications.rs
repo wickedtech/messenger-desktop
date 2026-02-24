@@ -84,21 +84,25 @@ impl NotificationService {
 
         // Check if notifications are enabled
         let state = self.state.read().await;
-        let settings = &state.settings;
+        let settings_enabled = state.settings.enabled;
+        let settings_do_not_disturb = state.settings.do_not_disturb;
+        let settings_dnd_schedule = state.settings.dnd_schedule.clone();
+        let settings_sound_enabled = state.settings.sound_enabled;
+        let settings_sound_path = state.settings.sound_path.clone();
 
-        if !settings.enabled {
+        if !settings_enabled {
             info!("Notifications disabled, skipping: {}", data.title);
             return Ok(());
         }
 
         // Check Do Not Disturb mode
-        if settings.do_not_disturb {
+        if settings_do_not_disturb {
             info!("DND active, suppressing notification: {}", data.title);
             return Ok(());
         }
 
         // Check DND schedule if configured
-        if let Some(schedule) = &settings.dnd_schedule {
+        if let Some(schedule) = &settings_dnd_schedule {
             if self.is_in_dnd_schedule(schedule).await {
                 info!("In DND schedule, suppressing notification: {}", data.title);
                 return Ok(());
@@ -136,8 +140,8 @@ impl NotificationService {
         self.show_native_linux(&payload).await?;
 
         // Play sound if enabled
-        if settings.sound_enabled {
-            self.play_notification_sound(&settings.sound_path).await?;
+        if settings_sound_enabled {
+            self.play_notification_sound(&settings_sound_path).await?;
         }
 
         info!("Notification shown: {} - {}", data.title, data.body);
@@ -439,14 +443,14 @@ struct NotificationPayload {
 // Tauri commands
 
 /// Show a native notification
-#[tauri::command(async)]
+#[tauri::command]
 #[specta::specta]
 pub async fn show_notification(
     title: String,
     body: String,
     icon_url: Option<String>,
     notification_service: tauri::State<'_, NotificationService>,
-) -> Result<(), anyhow::Error> {
+) -> Result<(), String> {
     let data = NotificationData {
         id: format!("notification_{}", chrono::Utc::now().timestamp()),
         title,
@@ -460,89 +464,83 @@ pub async fn show_notification(
         silent: false,
     };
 
-    notification_service.show_notification(data).await?;
-    Ok(())
+    notification_service.show_notification(data).await.map_err(|e| e.to_string())
 }
 
 /// Set Do Not Disturb mode
-#[tauri::command(async)]
+#[tauri::command]
 #[specta::specta]
 pub async fn set_dnd(
     enabled: bool,
     notification_service: tauri::State<'_, NotificationService>,
-) -> Result<(), anyhow::Error> {
-    notification_service.set_dnd(enabled).await?;
-    Ok(())
+) -> Result<(), String> {
+    notification_service.set_dnd(enabled).await.map_err(|e| e.to_string())
 }
 
 /// Toggle Do Not Disturb mode
-#[tauri::command(async)]
+#[tauri::command]
 #[specta::specta]
 pub async fn toggle_dnd(
     notification_service: tauri::State<'_, NotificationService>,
-) -> Result<bool, anyhow::Error> {
+) -> Result<bool, String> {
     let current = notification_service.get_settings().await.do_not_disturb;
-    notification_service.set_dnd(!current).await?;
+    notification_service.set_dnd(!current).await.map_err(|e| e.to_string())?;
     Ok(!current)
 }
 
 /// Get Do Not Disturb status
-#[tauri::command(async)]
+#[tauri::command]
 #[specta::specta]
 pub async fn is_dnd_enabled(
     notification_service: tauri::State<'_, NotificationService>,
-) -> Result<bool, anyhow::Error> {
+) -> Result<bool, String> {
     Ok(notification_service.get_settings().await.do_not_disturb)
 }
 
 /// Set notification sound path
-#[tauri::command(async)]
+#[tauri::command]
 #[specta::specta]
 pub async fn set_notification_sound(
     path: String,
     notification_service: tauri::State<'_, NotificationService>,
-) -> Result<(), anyhow::Error> {
-    notification_service.set_notification_sound(path).await?;
-    Ok(())
+) -> Result<(), String> {
+    notification_service.set_notification_sound(path).await.map_err(|e| e.to_string())
 }
 
 /// Get notification settings
-#[tauri::command(async)]
+#[tauri::command]
 #[specta::specta]
 pub async fn get_notification_settings(
     notification_service: tauri::State<'_, NotificationService>,
-) -> Result<NotificationSettings, anyhow::Error> {
+) -> Result<NotificationSettings, String> {
     Ok(notification_service.get_settings().await)
 }
 
 /// Enable/disable notifications
-#[tauri::command(async)]
+#[tauri::command]
 #[specta::specta]
 pub async fn set_notification_enabled(
     enabled: bool,
     notification_service: tauri::State<'_, NotificationService>,
-) -> Result<(), anyhow::Error> {
-    notification_service.set_enabled(enabled).await?;
-    Ok(())
+) -> Result<(), String> {
+    notification_service.set_enabled(enabled).await.map_err(|e| e.to_string())
 }
 
 /// Enable/disable notification sound
-#[tauri::command(async)]
+#[tauri::command]
 #[specta::specta]
 pub async fn set_notification_sound_enabled(
     enabled: bool,
     notification_service: tauri::State<'_, NotificationService>,
-) -> Result<(), anyhow::Error> {
-    notification_service.set_sound_enabled(enabled).await?;
-    Ok(())
+) -> Result<(), String> {
+    notification_service.set_sound_enabled(enabled).await.map_err(|e| e.to_string())
 }
 
 /// Set notification sound to default
-#[tauri::command(async)]
+#[tauri::command]
 #[specta::specta]
 pub async fn use_default_notification_sound(
     notification_service: tauri::State<'_, NotificationService>,
-) -> Result<(), anyhow::Error> {
-    notification_service.set_notification_sound(String::new()).await?;
-    Ok(())
+) -> Result<(), String> {
+    notification_service.set_notification_sound(String::new()).await.map_err(|e| e.to_string())
 }

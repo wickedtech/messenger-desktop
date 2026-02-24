@@ -1,4 +1,28 @@
 use tauri::Manager;
+use std::sync::Mutex;
+
+// Import all the command functions
+use crate::notifications::{
+    show_notification, set_dnd, toggle_dnd, is_dnd_enabled, set_notification_sound,
+    get_notification_settings, set_notification_enabled, set_notification_sound_enabled,
+    use_default_notification_sound
+};
+use crate::window_manager::{
+    toggle_always_on_top, set_always_on_top, is_always_on_top, set_zoom, get_zoom,
+    zoom_in, zoom_out, reset_zoom, get_zoom_formatted, get_zoom_percentage,
+    toggle_focus_mode, set_focus_mode, is_in_focus_mode, get_window_state,
+    save_window_state, restore_window_state, reset_window_state, toggle_fullscreen,
+    toggle_maximize, set_maximized, is_maximized, minimize_to_tray, restore_from_tray
+};
+use crate::tray::{init_tray, update_unread_count, set_tray_tooltip};
+use crate::shortcuts::{init_shortcuts, register_shortcuts, update_shortcut, unregister_shortcut};
+use crate::theme_manager::{set_theme, get_themes, set_custom_css, current_theme_name};
+use crate::privacy::{set_privacy, get_privacy, set_block_typing, set_block_read_receipts, set_hide_last_active};
+use crate::updater::{check_update, install_update};
+// use crate::spellcheck::{spellcheck, get_suggestions}; // Disabled due to hunspell issues
+use crate::accounts::{list_accounts, add_account, remove_account};
+use crate::media::grant_media_permission;
+use crate::drag_drop::handle_file_drop;
 
 mod accounts;
 mod drag_drop;
@@ -13,17 +37,7 @@ mod tray;
 mod updater;
 mod window_manager;
 
-use accounts::*;
-use drag_drop::*;
-use media::*;
-use notifications::*;
-use privacy::*;
-use shortcuts::*;
-use spellcheck::*;
-use theme_manager::*;
-use tray::*;
-use updater::*;
-use window_manager::*;
+// Clipboard commands and print command are defined in their respective modules
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -34,10 +48,11 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
-            Some(vec!["--flag".to_owned()]),
+            Some(vec!["--flag"]),
         ))
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .plugin(tauri_plugin_clipboard_manager::init())
         .setup(|app| {
             let handle = app.handle().clone();
             let app_data_dir = app
@@ -46,47 +61,39 @@ pub fn run() {
                 .expect("failed to get app data dir");
 
             // Notification service (uses Arc internally)
-            let notif_service = NotificationService::new(app_data_dir.clone());
+            let notif_service = crate::notifications::NotificationService::new(app_data_dir.clone());
+
+            // Initialize privacy manager
+            let privacy_manager = crate::privacy::PrivacyManager::new(&handle);
+
+            // Initialize theme manager
+            let theme_manager = crate::theme_manager::ThemeManager::new(&handle);
+
+            // Initialize spellchecker
+            let spellchecker = crate::spellcheck::SpellcheckManager::new(&handle)?;
+
+            // Initialize updater
+            let updater = crate::updater::UpdaterManager::new(&handle);
+
+            // Initialize tray
+            let tray = crate::tray::TrayManager::new(&handle);
+
+            // Initialize window manager
+            let window_manager = crate::window_manager::WindowManager::new(app_data_dir.clone());
+
+            // Initialize shortcut manager
+            let shortcut_manager = crate::shortcuts::ShortcutManager::new();
+
             app.manage(notif_service);
+            app.manage(privacy_manager);
+            app.manage(theme_manager);
+            app.manage(spellchecker);
+            app.manage(tokio::sync::Mutex::new(updater));
+            app.manage(tray);
+            app.manage(window_manager);
+            app.manage(Mutex::new(shortcut_manager));
 
-            // Window manager (uses Arc internally)
-            let win_mgr = WindowManager::new(app_data_dir.clone());
-            app.manage(win_mgr);
-
-            // Tray
-            let tray_mgr = TrayManager::new(&handle)?;
-            app.manage(std::sync::Mutex::new(tray_mgr));
-
-            // Shortcuts
-            let shortcut_mgr = ShortcutManager::new();
-            app.manage(std::sync::Mutex::new(shortcut_mgr));
-            ShortcutManager::register_all(&handle)?;
-
-            // Theme
-            let theme_mgr = ThemeManager::new(&handle);
-            app.manage(std::sync::Mutex::new(theme_mgr));
-
-            // Privacy
-            let privacy_mgr = PrivacyManager::new(&handle);
-            app.manage(std::sync::Mutex::new(privacy_mgr));
-
-            // Accounts
-            let account_mgr = AccountManager::new(&handle);
-            app.manage(std::sync::Mutex::new(account_mgr));
-
-            // Updater
-            let updater_mgr = UpdaterManager::new(&handle);
-            app.manage(std::sync::Mutex::new(updater_mgr));
-
-            // Spellcheck
-            let spellcheck_mgr = SpellcheckManager::new(&handle);
-            app.manage(std::sync::Mutex::new(spellcheck_mgr));
-
-            // Media
-            let media_mgr = MediaManager::new(&handle);
-            app.manage(std::sync::Mutex::new(media_mgr));
-
-            // Platform-specific init
+            // Initialize platform-specific features
             platform::init(&handle);
 
             Ok(())
@@ -102,6 +109,7 @@ pub fn run() {
             set_notification_enabled,
             set_notification_sound_enabled,
             use_default_notification_sound,
+
             // Window management
             toggle_always_on_top,
             set_always_on_top,
@@ -111,12 +119,14 @@ pub fn run() {
             zoom_in,
             zoom_out,
             reset_zoom,
+            get_zoom_formatted,
+            get_zoom_percentage,
             toggle_focus_mode,
             set_focus_mode,
             is_in_focus_mode,
             get_window_state,
-            restore_window_state,
             save_window_state,
+            restore_window_state,
             reset_window_state,
             toggle_fullscreen,
             toggle_maximize,
@@ -124,45 +134,48 @@ pub fn run() {
             is_maximized,
             minimize_to_tray,
             restore_from_tray,
-            get_zoom_formatted,
-            get_zoom_percentage,
+
             // Tray
             init_tray,
             update_unread_count,
             set_tray_tooltip,
+
             // Shortcuts
             init_shortcuts,
             register_shortcuts,
             update_shortcut,
             unregister_shortcut,
+
             // Theme
             set_theme,
             get_themes,
             set_custom_css,
             current_theme_name,
+
             // Privacy
             set_privacy,
             get_privacy,
             set_block_typing,
             set_block_read_receipts,
             set_hide_last_active,
-            set_block_link_previews,
-            // Accounts
-            add_account,
-            remove_account,
-            switch_account,
-            list_accounts,
+
             // Updater
             check_update,
             install_update,
-            get_current_version,
-            // Spellcheck
-            set_spellcheck_language,
-            get_available_languages,
+
+            // Spellcheck (disabled due to hunspell issues)
+            // spellcheck,
+            // get_suggestions,
+
+            // Accounts
+            list_accounts,
+            add_account,
+            remove_account,
+
             // Media
-            get_media_permissions,
             grant_media_permission,
-            // Drag & drop
+
+            // Drag & Drop
             handle_file_drop,
         ])
         .run(tauri::generate_context!())

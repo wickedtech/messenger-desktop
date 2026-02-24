@@ -71,8 +71,8 @@ pub fn set_privacy(
         hide_last_active,
         block_link_previews,
     };
-    
-    let mut manager = state.lock().map_err(|e| tauri::Error::Poisoned(e.to_string()))?;
+
+    let mut manager = state.lock().map_err(|e| anyhow::anyhow!(e.to_string()))?;
     manager.update(new_config)
 }
 
@@ -80,7 +80,7 @@ pub fn set_privacy(
 pub fn get_privacy(
     state: tauri::State<std::sync::Mutex<PrivacyManager>>,
 ) -> tauri::Result<PrivacyConfig> {
-    let manager = state.lock().map_err(|e| tauri::Error::Poisoned(e.to_string()))?;
+    let manager = state.lock().map_err(|e| anyhow::anyhow!(e.to_string()))?;
     Ok(manager.config().clone())
 }
 
@@ -89,7 +89,7 @@ pub fn set_block_typing(
     state: tauri::State<std::sync::Mutex<PrivacyManager>>,
     value: bool,
 ) -> tauri::Result<()> {
-    let mut manager = state.lock().map_err(|e| tauri::Error::Poisoned(e.to_string()))?;
+    let mut manager = state.lock().map_err(|e| anyhow::anyhow!(e.to_string()))?;
     manager.set_block_typing(value)
 }
 
@@ -98,7 +98,7 @@ pub fn set_block_read_receipts(
     state: tauri::State<std::sync::Mutex<PrivacyManager>>,
     value: bool,
 ) -> tauri::Result<()> {
-    let mut manager = state.lock().map_err(|e| tauri::Error::Poisoned(e.to_string()))?;
+    let mut manager = state.lock().map_err(|e| anyhow::anyhow!(e.to_string()))?;
     manager.set_block_read_receipts(value)
 }
 
@@ -107,7 +107,7 @@ pub fn set_hide_last_active(
     state: tauri::State<std::sync::Mutex<PrivacyManager>>,
     value: bool,
 ) -> tauri::Result<()> {
-    let mut manager = state.lock().map_err(|e| tauri::Error::Poisoned(e.to_string()))?;
+    let mut manager = state.lock().map_err(|e| anyhow::anyhow!(e.to_string()))?;
     manager.set_hide_last_active(value)
 }
 
@@ -116,6 +116,6 @@ pub fn set_block_link_previews(
     state: tauri::State<std::sync::Mutex<PrivacyManager>>,
     value: bool,
 ) -> tauri::Result<()> {
-    let mut manager = state.lock().map_err(|e| tauri::Error::Poisoned(e.to_string()))?;
+    let mut manager = state.lock().map_err(|e| anyhow::anyhow!(e.to_string()))?;
     manager.set_block_link_previews(value)
 }

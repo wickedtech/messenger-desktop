@@ -2,6 +2,7 @@
 // Implements minimize to tray, window state persistence, always-on-top,
 // focus mode, zoom, and fullscreen toggle
 
+
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use specta::Type;
@@ -298,8 +299,9 @@ impl WindowManager {
         });
         
         // Keep only last 100 positions
-        if state.saved_positions.len() > 100 {
-            state.saved_positions.drain(0..(state.saved_positions.len() - 100));
+        let len = state.saved_positions.len();
+        if len > 100 {
+            state.saved_positions.drain(0..(len - 100));
         }
         
         Ok(())
@@ -396,12 +398,12 @@ impl Default for WindowManager {
 // Tauri commands
 
 /// Toggle always-on-top mode
-#[tauri::command(async)]
+#[tauri::command]
 #[specta::specta]
 pub async fn toggle_always_on_top(
     window_manager: tauri::State<'_, WindowManager>,
-) -> Result<bool, anyhow::Error> {
-    window_manager.toggle_always_on_top().await
+) -> Result<bool, String> {
+    window_manager.toggle_always_on_top().await.map_err(|e| e.to_string())
 }
 
 /// Set always-on-top mode
@@ -410,9 +412,8 @@ pub async fn toggle_always_on_top(
 pub async fn set_always_on_top(
     enabled: bool,
     window_manager: tauri::State<'_, WindowManager>,
-) -> Result<(), anyhow::Error> {
-    window_manager.set_always_on_top(enabled).await?;
-    Ok(())
+) -> Result<(), String> {
+    window_manager.set_always_on_top(enabled).await.map_err(|e| e.to_string())
 }
 
 /// Get always-on-top status
@@ -420,7 +421,7 @@ pub async fn set_always_on_top(
 #[specta::specta]
 pub async fn is_always_on_top(
     window_manager: tauri::State<'_, WindowManager>,
-) -> Result<bool, anyhow::Error> {
+) -> Result<bool, String> {
     Ok(window_manager.is_always_on_top().await)
 }
 
@@ -430,9 +431,8 @@ pub async fn is_always_on_top(
 pub async fn set_zoom(
     level: f64,
     window_manager: tauri::State<'_, WindowManager>,
-) -> Result<(), anyhow::Error> {
-    window_manager.set_zoom(level).await?;
-    Ok(())
+) -> Result<(), String> {
+    window_manager.set_zoom(level).await.map_err(|e| e.to_string())
 }
 
 /// Get current zoom level
@@ -440,7 +440,7 @@ pub async fn set_zoom(
 #[specta::specta]
 pub async fn get_zoom(
     window_manager: tauri::State<'_, WindowManager>,
-) -> Result<f64, anyhow::Error> {
+) -> Result<f64, String> {
     Ok(window_manager.get_zoom().await)
 }
 
@@ -449,8 +449,8 @@ pub async fn get_zoom(
 #[specta::specta]
 pub async fn zoom_in(
     window_manager: tauri::State<'_, WindowManager>,
-) -> Result<f64, anyhow::Error> {
-    window_manager.zoom_in().await
+) -> Result<f64, String> {
+    window_manager.zoom_in().await.map_err(|e| e.to_string())
 }
 
 /// Zoom out
@@ -458,8 +458,8 @@ pub async fn zoom_in(
 #[specta::specta]
 pub async fn zoom_out(
     window_manager: tauri::State<'_, WindowManager>,
-) -> Result<f64, anyhow::Error> {
-    window_manager.zoom_out().await
+) -> Result<f64, String> {
+    window_manager.zoom_out().await.map_err(|e| e.to_string())
 }
 
 /// Reset zoom
@@ -467,8 +467,8 @@ pub async fn zoom_out(
 #[specta::specta]
 pub async fn reset_zoom(
     window_manager: tauri::State<'_, WindowManager>,
-) -> Result<f64, anyhow::Error> {
-    window_manager.reset_zoom().await
+) -> Result<f64, String> {
+    window_manager.reset_zoom().await.map_err(|e| e.to_string())
 }
 
 /// Toggle focus mode
@@ -476,8 +476,8 @@ pub async fn reset_zoom(
 #[specta::specta]
 pub async fn toggle_focus_mode(
     window_manager: tauri::State<'_, WindowManager>,
-) -> Result<bool, anyhow::Error> {
-    window_manager.toggle_focus_mode().await
+) -> Result<bool, String> {
+    window_manager.toggle_focus_mode().await.map_err(|e| e.to_string())
 }
 
 /// Set focus mode
@@ -486,9 +486,8 @@ pub async fn toggle_focus_mode(
 pub async fn set_focus_mode(
     enabled: bool,
     window_manager: tauri::State<'_, WindowManager>,
-) -> Result<(), anyhow::Error> {
-    window_manager.set_focus_mode(enabled).await?;
-    Ok(())
+) -> Result<(), String> {
+    window_manager.set_focus_mode(enabled).await.map_err(|e| e.to_string())
 }
 
 /// Get focus mode status
@@ -496,7 +495,7 @@ pub async fn set_focus_mode(
 #[specta::specta]
 pub async fn is_in_focus_mode(
     window_manager: tauri::State<'_, WindowManager>,
-) -> Result<bool, anyhow::Error> {
+) -> Result<bool, String> {
     Ok(window_manager.is_in_focus_mode().await)
 }
 
@@ -505,9 +504,8 @@ pub async fn is_in_focus_mode(
 #[specta::specta]
 pub async fn save_window_state(
     window_manager: tauri::State<'_, WindowManager>,
-) -> Result<(), anyhow::Error> {
-    window_manager.save_current_state().await?;
-    Ok(())
+) -> Result<(), String> {
+    window_manager.save_current_state().await.map_err(|e| e.to_string())
 }
 
 /// Restore window state
@@ -515,8 +513,8 @@ pub async fn save_window_state(
 #[specta::specta]
 pub async fn restore_window_state(
     window_manager: tauri::State<'_, WindowManager>,
-) -> Result<WindowState, anyhow::Error> {
-    window_manager.restore_window_state().await
+) -> Result<WindowState, String> {
+    window_manager.restore_window_state().await.map_err(|e| e.to_string())
 }
 
 /// Get current window state
@@ -524,7 +522,7 @@ pub async fn restore_window_state(
 #[specta::specta]
 pub async fn get_window_state(
     window_manager: tauri::State<'_, WindowManager>,
-) -> Result<WindowState, anyhow::Error> {
+) -> Result<WindowState, String> {
     Ok(window_manager.get_window_state().await)
 }
 
@@ -533,8 +531,8 @@ pub async fn get_window_state(
 #[specta::specta]
 pub async fn reset_window_state(
     window_manager: tauri::State<'_, WindowManager>,
-) -> Result<WindowState, anyhow::Error> {
-    window_manager.reset_to_default().await
+) -> Result<WindowState, String> {
+    window_manager.reset_to_default().await.map_err(|e| e.to_string())
 }
 
 /// Get zoom percentage for display
@@ -542,7 +540,7 @@ pub async fn reset_window_state(
 #[specta::specta]
 pub async fn get_zoom_percentage(
     window_manager: tauri::State<'_, WindowManager>,
-) -> Result<f64, anyhow::Error> {
+) -> Result<f64, String> {
     Ok(window_manager.get_zoom_percentage().await)
 }
 
@@ -551,7 +549,7 @@ pub async fn get_zoom_percentage(
 #[specta::specta]
 pub async fn get_zoom_formatted(
     window_manager: tauri::State<'_, WindowManager>,
-) -> Result<String, anyhow::Error> {
+) -> Result<String, String> {
     Ok(window_manager.format_zoom().await)
 }
 
@@ -560,9 +558,8 @@ pub async fn get_zoom_formatted(
 #[specta::specta]
 pub async fn minimize_to_tray(
     window_manager: tauri::State<'_, WindowManager>,
-) -> Result<(), anyhow::Error> {
-    window_manager.minimize_to_tray().await?;
-    Ok(())
+) -> Result<(), String> {
+    window_manager.minimize_to_tray().await.map_err(|e| e.to_string())
 }
 
 /// Restore from tray
@@ -570,9 +567,8 @@ pub async fn minimize_to_tray(
 #[specta::specta]
 pub async fn restore_from_tray(
     window_manager: tauri::State<'_, WindowManager>,
-) -> Result<(), anyhow::Error> {
-    window_manager.restore_from_tray().await?;
-    Ok(())
+) -> Result<(), String> {
+    window_manager.restore_from_tray().await.map_err(|e| e.to_string())
 }
 
 /// Toggle maximize window
@@ -580,8 +576,8 @@ pub async fn restore_from_tray(
 #[specta::specta]
 pub async fn toggle_maximize(
     window_manager: tauri::State<'_, WindowManager>,
-) -> Result<bool, anyhow::Error> {
-    window_manager.toggle_maximize().await
+) -> Result<bool, String> {
+    window_manager.toggle_maximize().await.map_err(|e| e.to_string())
 }
 
 /// Set maximize state
@@ -590,9 +586,8 @@ pub async fn toggle_maximize(
 pub async fn set_maximized(
     maximized: bool,
     window_manager: tauri::State<'_, WindowManager>,
-) -> Result<(), anyhow::Error> {
-    window_manager.set_maximized(maximized).await?;
-    Ok(())
+) -> Result<(), String> {
+    window_manager.set_maximized(maximized).await.map_err(|e| e.to_string())
 }
 
 /// Get maximize state
@@ -600,7 +595,7 @@ pub async fn set_maximized(
 #[specta::specta]
 pub async fn is_maximized(
     window_manager: tauri::State<'_, WindowManager>,
-) -> Result<bool, anyhow::Error> {
+) -> Result<bool, String> {
     Ok(window_manager.is_maximized().await)
 }
 
@@ -609,6 +604,6 @@ pub async fn is_maximized(
 #[specta::specta]
 pub async fn toggle_fullscreen(
     window_manager: tauri::State<'_, WindowManager>,
-) -> Result<bool, anyhow::Error> {
-    window_manager.toggle_fullscreen().await
+) -> Result<bool, String> {
+    window_manager.toggle_fullscreen().await.map_err(|e| e.to_string())
 }

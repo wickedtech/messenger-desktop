@@ -11,7 +11,7 @@ pub enum Theme {
     Custom(String),
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 struct ThemePayload {
     name: String,
     css: String,
@@ -141,7 +141,7 @@ pub fn set_theme(
     state: tauri::State<std::sync::Mutex<ThemeManager>>,
     name: String,
 ) -> tauri::Result<()> {
-    let mut manager = state.lock().map_err(|e| tauri::Error::Poisoned(e.to_string()))?;
+    let mut manager = state.lock().map_err(|e| anyhow::anyhow!(e.to_string()))?;
     manager.set_theme(&name)
 }
 
@@ -155,7 +155,7 @@ pub fn set_custom_css(
     state: tauri::State<std::sync::Mutex<ThemeManager>>,
     css: String,
 ) -> tauri::Result<()> {
-    let mut manager = state.lock().map_err(|e| tauri::Error::Poisoned(e.to_string()))?;
+    let mut manager = state.lock().map_err(|e| anyhow::anyhow!(e.to_string()))?;
     manager.set_custom_css(css)
 }
 
@@ -163,7 +163,7 @@ pub fn set_custom_css(
 pub fn current_theme_name(
     state: tauri::State<std::sync::Mutex<ThemeManager>>,
 ) -> tauri::Result<String> {
-    let manager = state.lock().map_err(|e| tauri::Error::Poisoned(e.to_string()))?;
+    let manager = state.lock().map_err(|e| anyhow::anyhow!(e.to_string()))?;
     Ok(match manager.current_theme() {
         Theme::Light => "light",
         Theme::Dark => "dark",

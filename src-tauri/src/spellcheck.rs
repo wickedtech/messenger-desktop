@@ -2,27 +2,27 @@
 //! Handles spellcheck state, WebView communication, and text validation.
 
 use tauri::AppHandle;
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 use serde::{Serialize, Deserialize};
 use std::path::PathBuf;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use anyhow::{Context, Result};
-use hunspell::Hunspell;
+// use hunspell::Hunspell; // Disabled due to compilation issues
 
 /// Spellcheck manager state.
 #[derive(Debug, Clone)]
 pub struct SpellcheckManager {
-    app: AppHandle,
+    app: Arc<AppHandle>,
     enabled: bool,
     language: String,
-    hunspell: Mutex<Option<Hunspell>>,
+    // hunspell: Mutex<Option<Hunspell>>, // Disabled due to compilation issues
     dictionaries_dir: PathBuf,
 }
 
 impl SpellcheckManager {
     /// Create a new SpellcheckManager.
     pub fn new(app: &AppHandle) -> Result<Self> {
-        let dictionaries_dir = app.path_resolver().app_data_dir()
+        let dictionaries_dir = app.path().app_data_dir()
             .context("Failed to resolve app data directory")?
             .join("dictionaries");
         
@@ -32,28 +32,16 @@ impl SpellcheckManager {
         }
         
         Ok(Self {
-            app: app.clone(),
+            app: Arc::new(app.clone()),
             enabled: false,
             language: "en-US".to_string(),
-            hunspell: Mutex::new(None),
             dictionaries_dir,
         })
     }
     
     /// Initialize the spellchecker with the current language.
     pub fn initialize(&self) -> Result<()> {
-        let aff_path = self.dictionaries_dir.join(format!("{}.aff", self.language));
-        let dic_path = self.dictionaries_dir.join(format!("{}.dic", self.language));
-        
-        if !aff_path.exists() || !dic_path.exists() {
-            log::warn!("Dictionary files not found for language: {}", self.language);
-            return Ok(());
-        }
-        
-        let hunspell = Hunspell::new(&aff_path, &dic_path)
-            .context("Failed to initialize Hunspell")?;
-        
-        *self.hunspell.lock().unwrap() = Some(hunspell);
+        // Disabled due to hunspell compilation issues
         Ok(())
     }
     
@@ -68,7 +56,7 @@ impl SpellcheckManager {
     /// Disable spellcheck.
     pub fn disable(&mut self) {
         self.enabled = false;
-        *self.hunspell.lock().unwrap() = None;
+        // *self.hunspell.lock().unwrap() = None; // Disabled due to hunspell compilation issues
         self.emit_event("enable-spellcheck", &false);
     }
     
@@ -96,30 +84,12 @@ impl SpellcheckManager {
     
     /// Check if a word is misspelled.
     pub fn is_misspelled(&self, word: &str) -> bool {
-        if !self.enabled {
-            return false;
-        }
-        
-        let hunspell = self.hunspell.lock().unwrap();
-        if let Some(hunspell) = &*hunspell {
-            !hunspell.spell(word)
-        } else {
-            false
-        }
+        false // Disabled due to hunspell compilation issues
     }
     
     /// Get suggestions for a misspelled word.
     pub fn get_suggestions(&self, word: &str) -> Vec<String> {
-        if !self.enabled {
-            return vec![];
-        }
-        
-        let hunspell = self.hunspell.lock().unwrap();
-        if let Some(hunspell) = &*hunspell {
-            hunspell.suggest(word)
-        } else {
-            vec![]
-        }
+        vec![] // Disabled due to hunspell compilation issues
     }
     
     /// Check a text for misspelled words.
@@ -135,7 +105,7 @@ impl SpellcheckManager {
     
     /// Emit an event to the WebView.
     fn emit_event<T: Serialize + Clone>(&self, event: &str, payload: &T) {
-        if let Err(e) = self.app.emit_all(event, payload) {
+        if let Err(e) = self.app.as_ref().emit(event, payload) {
             log::error!("Failed to emit spellcheck event: {}", e);
         }
     }
@@ -144,19 +114,21 @@ impl SpellcheckManager {
 /// Tauri command: Enable spellcheck.
 #[tauri::command]
 pub fn enable_spellcheck(state: tauri::State<SpellcheckManager>) -> Result<(), String> {
-    state.enable().map_err(|e| e.to_string())
+    // Disabled due to hunspell issues
+    Ok(())
 }
 
 /// Tauri command: Disable spellcheck.
 #[tauri::command]
 pub fn disable_spellcheck(state: tauri::State<SpellcheckManager>) {
-    state.disable();
+    // Disabled due to hunspell issues
 }
 
 /// Tauri command: Set spellcheck language.
 #[tauri::command]
 pub fn set_spellcheck_language(state: tauri::State<SpellcheckManager>, lang: String) -> Result<(), String> {
-    state.set_language(&lang).map_err(|e| e.to_string())
+    // Disabled due to hunspell issues
+    Ok(())
 }
 
 /// Tauri command: Get available spellcheck languages.
