@@ -5,6 +5,8 @@ use tauri::AppHandle;
 
 /// Initialize platform-specific features.
 pub fn init(app: &AppHandle) {
+    log::info!("Initializing platform-specific features");
+    
     #[cfg(target_os = "macos")]
     macos::init(app);
 

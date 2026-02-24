@@ -4,6 +4,7 @@
 use tauri::AppHandle;
 use objc::{class, msg_send, sel, sel_impl};
 use objc::runtime::Object;
+use std::ptr;
 use objc_foundation::INSString;
 use objc_id::ShareId;
 
@@ -22,7 +23,8 @@ pub fn set_dock_badge(count: u32) {
         let dock_tile: *mut Object = msg_send![ns_app, dockTile];
         
         if count == 0 {
-            let _: () = msg_send![dock_tile, setBadgeLabel: nil];
+            let null: *mut Object = ptr::null_mut();
+            let _: () = msg_send![dock_tile, setBadgeLabel: null];
         } else {
             let count_str = format!("{}", count);
             let ns_string: *mut Object = msg_send![class!(NSString), stringWithUTF8String: count_str.as_ptr()];

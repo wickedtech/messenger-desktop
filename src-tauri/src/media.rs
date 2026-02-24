@@ -31,15 +31,12 @@ pub struct MediaFile {
 }
 
 /// Media manager state.
-#[derive(Debug, Clone)]
-#[allow(dead_code)]
 pub struct MediaManager {
     app: AppHandle,
     permissions: MediaPermissions,
     media_dir: PathBuf,
 }
 
-#[allow(dead_code)]
 impl MediaManager {
     /// Create a new MediaManager.
     pub fn new(app: &AppHandle) -> Result<Self> {

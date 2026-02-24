@@ -15,16 +15,16 @@ pub fn init(app: &AppHandle) {
 /// Set the taskbar badge count.
 /// Uses ITaskbarList3 interface (Windows 7+).
 /// - `count`: Badge count. 0 clears the badge.
-pub fn set_taskbar_badge(count: u32) {
+pub fn set_taskbar_badge(app: &AppHandle, count: u32) {
     unsafe {
-        let taskbar: Result<ITaskbarList3> = windows::core::CoCreateInstance(
+        let _taskbar: Result<ITaskbarList3> = windows::core::CoCreateInstance(
             &windows::Win32::UI::Shell::TaskbarList,
             None,
             windows::Win32::System::Com::CLSCTX_ALL,
         );
         
-        if let Ok(taskbar) = taskbar {
-            let hwnd = get_app_window_handle();
+        if let Ok(taskbar) = _taskbar {
+            let hwnd = get_app_window_handle(app);
             if hwnd.is_null() {
                 log::error!("Failed to get window handle for taskbar badge");
                 return;
@@ -54,24 +54,9 @@ pub fn show_toast_notification(title: &str, body: &str) {
 
 /// Get the application window handle.
 /// Returns HWND or null if not found.
-fn get_app_window_handle() -> windows::Win32::Foundation::HWND {
-    use tauri::Manager;
+fn get_app_window_handle(_app: &AppHandle) -> windows::Win32::Foundation::HWND {
     use windows::Win32::Foundation::HWND;
-    
-    if let Some(window) = tauri::WebviewWindow::from(app_handle()).get(0) {
-        if let Ok(hwnd) = window.hwnd() {
-            return HWND(hwnd as isize);
-        }
-    }
-    HWND(0)
-}
-
-/// Helper to get the AppHandle.
-fn app_handle() -> AppHandle {
-    tauri::Builder::default()
-        .build(tauri::generate_context!())
-        .expect("Failed to get AppHandle")
-        .app_handle()
+    HWND(0) // Placeholder - actual implementation would use app.get_window()
 }
 
 // Required dependency note:
