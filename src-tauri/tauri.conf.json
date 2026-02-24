@@ -1,0 +1,30 @@
+{
+  "build": {
+    "devPath": "http://localhost:1420",
+    "distDir": "../dist"
+  },
+  "package": {
+    "productName": "Messenger Desktop",
+    "version": "0.1.0"
+  },
+  "tauri": {
+    "allowlist": {
+      "shell": {
+        "open": true
+      }
+    },
+    "windows": [
+      {
+        "title": "Messenger",
+        "width": 1200,
+        "height": 800,
+        "resizable": true,
+        "fullscreen": false,
+        "url": "https://www.messenger.com"
+      }
+    ],
+    "security": {
+      "csp": "default-src https://www.messenger.com https://*.messenger.com https://*.facebook.com https://*.fbcdn.net;"
+    }
+  }
+}

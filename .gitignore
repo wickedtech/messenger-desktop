@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+target/
+dist/
+
+# Environment
+.env
+.env.local
+
+# Logs
+tauri.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
