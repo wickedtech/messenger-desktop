@@ -173,22 +173,6 @@ pub fn run() {
 
             // Initialize platform-specific features
             platform::init(&handle);
-            
-            // Listen for macOS foreground activation requests
-            #[cfg(target_os = "macos")]
-            {
-                let app_handle = app.handle().clone();
-                app.listen_for(move |event| {
-                    if let tauri::AppEvent::Ready = event {
-                        // Register for request-focus event listener
-                        let app_clone = app_handle.clone();
-                        app.handle().listen("request-focus", move |event| {
-                            log::debug!("Received request-focus event on macOS");
-                            platform::request_foreground_activation(&app_clone);
-                        });
-                    }
-                });
-            }
 
             Ok(())
         })
