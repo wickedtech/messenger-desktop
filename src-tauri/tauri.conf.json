@@ -15,7 +15,7 @@
       "icons/icon.ico",
       "icons/icon.png"
     ],
-    "category": "Social",
+    "category": "Social Networking",
     "shortDescription": "Native Messenger desktop client",
     "longDescription": "A native desktop wrapper for Facebook Messenger with notifications, system tray, multi-account support, dark/light themes, global keyboard shortcuts, and auto-updater.",
     "macOS": {
