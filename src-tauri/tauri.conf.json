@@ -28,11 +28,9 @@
     },
     "windows": {
       "nsis": {
-        "license": "../LICENSE",
         "installMode": "currentUser",
         "languages": ["English"],
-        "compression": "lzma",
-        "allowDowngrades": false
+        "compression": "lzma"
       }
     },
     "linux": {
