@@ -18,6 +18,12 @@ const defaultConfig: PrivacyConfig = {
 let privacyConfig: PrivacyConfig = { ...defaultConfig };
 let styleElements: HTMLStyleElement[] = [];
 
+// Store originals once at module level to prevent stacking overrides
+const _originalXhrOpen = XMLHttpRequest.prototype.open;
+const _originalFetch = window.fetch;
+let _xhrPatched = false;
+let _fetchPatched = false;
+
 function createStyleElement(css: string): HTMLStyleElement {
   const style = document.createElement('style');
   style.textContent = css;
@@ -31,27 +37,31 @@ function applyPrivacyRules(): void {
   styleElements.forEach(el => el.remove());
   styleElements = [];
 
-  // Block typing/composing URLs in XHR
+  // Block typing/composing URLs in XHR (patch once using stored original)
   if (privacyConfig.blockTyping) {
-    const originalOpen = XMLHttpRequest.prototype.open;
-    XMLHttpRequest.prototype.open = function(method: string, url: string) {
-      if (typeof url === 'string' && (url.includes('typing') || url.includes('composing'))) {
-        console.log('[privacy] Blocked typing/composing request:', url);
-        return;
-      }
-      return originalOpen.apply(this, arguments as any);
-    };
+    if (!_xhrPatched) {
+      XMLHttpRequest.prototype.open = function(method: string, url: string) {
+        if (typeof url === 'string' && (url.includes('typing') || url.includes('composing'))) {
+          console.log('[privacy] Blocked typing/composing request:', url);
+          return;
+        }
+        return _originalXhrOpen.apply(this, arguments as any);
+      };
+      _xhrPatched = true;
+    }
 
-    // Block typing/composing URLs in fetch
-    const originalFetch = window.fetch;
-    window.fetch = async function(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
-      const url = typeof input === 'string' ? input : input instanceof Request ? input.url : '';
-      if (url && (url.includes('typing') || url.includes('composing'))) {
-        console.log('[privacy] Blocked typing/composing fetch:', url);
-        throw new Error('Blocked by privacy guard');
-      }
-      return originalFetch.apply(this, [input, init] as any);
-    };
+    // Block typing/composing URLs in fetch (patch once using stored original)
+    if (!_fetchPatched) {
+      window.fetch = async function(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+        const url = typeof input === 'string' ? input : input instanceof Request ? input.url : '';
+        if (url && (url.includes('typing') || url.includes('composing'))) {
+          console.log('[privacy] Blocked typing/composing fetch:', url);
+          throw new Error('Blocked by privacy guard');
+        }
+        return _originalFetch.apply(this, [input, init] as any);
+      };
+      _fetchPatched = true;
+    }
 
     console.log('[privacy] Typing/composing blocking enabled');
   }

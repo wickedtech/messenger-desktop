@@ -38,12 +38,14 @@ window.addEventListener('DOMContentLoaded', async () => {
     
     // Set text size slider
     (document.getElementById('text-size') as HTMLInputElement).value = settings["text-size"].toString();
-    document.getElementById('text-size-value')!.textContent = `${settings["text-size"]}%`;
+    const textSizeValue = document.getElementById('text-size-value');
+    if (textSizeValue) textSizeValue.textContent = `${settings["text-size"]}%`;
     
     // Set custom CSS if theme is custom
     if (settings.theme === 'custom') {
-        document.getElementById('custom-css-row')!.classList.add('active');
-        (document.getElementById('custom-css') as HTMLTextAreaElement).value = settings["custom-css"];
+        document.getElementById('custom-css-row')?.classList.add('active');
+        const customCss = document.getElementById('custom-css') as HTMLTextAreaElement | null;
+        if (customCss) customCss.value = settings["custom-css"];
     }
     
     // Set privacy toggles
@@ -54,15 +56,20 @@ window.addEventListener('DOMContentLoaded', async () => {
     
     // Set shortcuts
     const shortcuts = settings.shortcuts;
-    document.getElementById('shortcut-toggle-window')!.textContent = shortcuts["toggle-window"];
-    document.getElementById('shortcut-new-message')!.textContent = shortcuts["new-message"];
-    document.getElementById('shortcut-mute')!.textContent = shortcuts.mute;
-    document.getElementById('shortcut-dnd')!.textContent = shortcuts.dnd;
-    document.getElementById('shortcut-fullscreen')!.textContent = shortcuts.fullscreen;
+    const setShortcutText = (id: string, value: string) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+    };
+    setShortcutText('shortcut-toggle-window', shortcuts["toggle-window"]);
+    setShortcutText('shortcut-new-message', shortcuts["new-message"]);
+    setShortcutText('shortcut-mute', shortcuts.mute);
+    setShortcutText('shortcut-dnd', shortcuts.dnd);
+    setShortcutText('shortcut-fullscreen', shortcuts.fullscreen);
     
     // Set version
     const version = await window.__TAURI__.invoke('get_current_version');
-    document.getElementById('version')!.textContent = version;
+    const versionEl = document.getElementById('version');
+    if (versionEl) versionEl.textContent = version;
     
     // Setup sidebar navigation
     const sidebarItems = document.querySelectorAll('.sidebar-item');

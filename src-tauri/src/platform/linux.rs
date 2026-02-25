@@ -4,7 +4,6 @@
 use tauri::AppHandle;
 use std::process::Command;
 use std::fs;
-use dirs::home_dir;
 
 /// Initialize Linux-specific features.
 pub fn init(_app: &AppHandle) {
@@ -16,7 +15,6 @@ pub fn init(_app: &AppHandle) {
 /// - `title`: Notification title.
 /// - `body`: Notification body text.
 /// - `icon`: Icon name or path.
-#[allow(dead_code)]
 pub fn send_dbus_notification(title: &str, body: &str, icon: &str) {
     let result = Command::new("notify-send")
         .arg("--app-name=Messenger Desktop")
