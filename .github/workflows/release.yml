@@ -6,11 +6,50 @@ on:
       - "v*"
 
 jobs:
-  release:
+  create-release:
+    runs-on: ubuntu-latest
+    outputs:
+      release_id: ${{ steps.create-release.outputs.result }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create release
+        id: create-release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data } = await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: `${{ github.ref_name }}`,
+              name: `Messenger Desktop ${{ github.ref_name }}`,
+              body: 'See the assets below to download the installer for your platform.',
+              draft: true,
+              prerelease: false,
+            });
+            return data.id;
+
+  build-installers:
+    needs: create-release
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: macos-latest
+            args: --bundles dmg
+            artifact_pattern: src-tauri/target/release/bundle/dmg/*.dmg
+            platform: macOS
+          - os: ubuntu-22.04
+            args: --bundles deb,appimage
+            artifact_pattern: |
+              src-tauri/target/release/bundle/deb/*.deb
+              src-tauri/target/release/bundle/appimage/*.AppImage
+            platform: Linux
+          - os: windows-latest
+            args: --bundles nsis
+            artifact_pattern: src-tauri/target/release/bundle/nsis/*.exe
+            platform: Windows
 
     runs-on: ${{ matrix.os }}
 
@@ -20,36 +59,65 @@ jobs:
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.os == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
 
       - name: Install Linux dependencies
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-22.04'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libssl-dev \
+            libgtk-3-dev
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
       - name: Install npm dependencies
         run: npm install
 
-      - name: Build Tauri app (full bundles)
+      - name: Build and release (macOS universal)
+        if: matrix.os == 'macos-latest'
         uses: tauri-apps/tauri-action@v0
-
-      - name: Upload artifacts to release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: src-tauri/target/release/bundle/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          releaseId: ${{ needs.create-release.outputs.release_id }}
+          args: --bundles dmg --target universal-apple-darwin
 
-      - name: Generate update manifest
-        run: |
-          echo '{"version": "${{ github.ref_name }}", "notes": "Release ${{ github.ref_name }}", "pub_date": "$(date -u +'%Y-%m-%dT%H:%M:%SZ')", "platforms": {}}' > update-manifest.json
-          echo '  "linux": {"signature": "", "url": "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/messenger-desktop_${{ github.ref_name }}_amd64.AppImage"},' >> update-manifest.json
-          echo '  "darwin": {"signature": "", "url": "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/messenger-desktop_${{ github.ref_name }}_x64.dmg"},' >> update-manifest.json
-          echo '  "windows": {"signature": "", "url": "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/messenger-desktop_${{ github.ref_name }}_x64.msi"}' >> update-manifest.json
-          echo '}}' >> update-manifest.json
-        if: matrix.os == 'ubuntu-latest'
+      - name: Build and release (Linux / Windows)
+        if: matrix.os != 'macos-latest'
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          releaseId: ${{ needs.create-release.outputs.release_id }}
+          args: ${{ matrix.args }}
+
+  publish-release:
+    needs: [create-release, build-installers]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Publish release (remove draft)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.updateRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: ${{ needs.create-release.outputs.release_id }},
+              draft: false,
+            });

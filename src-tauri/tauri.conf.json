@@ -6,6 +6,52 @@
   "build": {
     "frontendDist": "../dist"
   },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/icon.icns",
+      "icons/icon.ico",
+      "icons/icon.png"
+    ],
+    "category": "Social",
+    "shortDescription": "Native Messenger desktop client",
+    "longDescription": "A native desktop wrapper for Facebook Messenger with notifications, system tray, multi-account support, dark/light themes, global keyboard shortcuts, and auto-updater.",
+    "macOS": {
+      "minimumSystemVersion": "10.15",
+      "dmg": {
+        "windowSize": { "width": 660, "height": 400 },
+        "appPosition": { "x": 180, "y": 170 },
+        "applicationFolderPosition": { "x": 480, "y": 170 }
+      }
+    },
+    "windows": {
+      "nsis": {
+        "license": "../LICENSE",
+        "installMode": "currentUser",
+        "languages": ["English"],
+        "compression": "lzma",
+        "allowDowngrades": false
+      }
+    },
+    "linux": {
+      "deb": {
+        "depends": [
+          "libwebkit2gtk-4.1-0",
+          "libgtk-3-0",
+          "libappindicator3-1",
+          "librsvg2-bin"
+        ]
+      },
+      "appimage": {
+        "bundleMediaFramework": true
+      },
+      "rpm": {
+        "release": "1"
+      }
+    }
+  },
   "app": {
     "windows": [
       {
