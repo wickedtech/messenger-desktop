@@ -4,7 +4,7 @@ use tauri::Manager;
 use crate::notifications::{
     show_notification, set_dnd, toggle_dnd, is_dnd_enabled, set_notification_sound,
     get_notification_settings, set_notification_enabled, set_notification_sound_enabled,
-    use_default_notification_sound
+    use_default_notification_sound, handle_notification
 };
 use crate::window_manager::{
     toggle_always_on_top, set_always_on_top, is_always_on_top, set_zoom, get_zoom,
@@ -131,6 +131,7 @@ pub fn run() {
             set_notification_enabled,
             set_notification_sound_enabled,
             use_default_notification_sound,
+            handle_notification,
 
             // Window management
             toggle_always_on_top,

@@ -1,9 +1,9 @@
 // Notification interceptor for Tauri app.
 // Intercepts and manages browser notifications.
 
-import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/api/notification';
+import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/plugin-notification';
 import { listen } from '@tauri-apps/api/event';
-import { invoke } from '@tauri-apps/api/tauri';
+import { invoke } from '@tauri-apps/api/core';
 
 // Setup notification interceptor.
 export function setupNotificationInterceptor() {

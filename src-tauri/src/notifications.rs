@@ -455,6 +455,43 @@ struct NotificationPayload {
 
 // Tauri commands
 
+/// Handle notification from JavaScript frontend
+#[tauri::command]
+pub async fn handle_notification(
+    title: String,
+    options: Option<serde_json::Value>,
+    service: tauri::State<'_, NotificationService>,
+    app: tauri::AppHandle,
+) -> Result<(), String> {
+    use tauri_plugin_notification::NotificationExt;
+    
+    let body = options
+        .as_ref()
+        .and_then(|o| o.get("body"))
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
+    
+    // Check DND
+    let state = service.state.read().await;
+    if state.settings.do_not_disturb {
+        return Ok(());
+    }
+    if !state.settings.enabled {
+        return Ok(());
+    }
+    drop(state);
+    
+    app.notification()
+        .builder()
+        .title(&title)
+        .body(&body)
+        .show()
+        .map_err(|e| e.to_string())?;
+    
+    Ok(())
+}
+
 /// Show a native notification
 #[tauri::command]
 #[specta::specta]
