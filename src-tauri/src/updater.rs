@@ -2,7 +2,6 @@
 //! Handles update checks, downloads, and installations.
 
 use tauri::AppHandle;
-use tauri_plugin_updater::UpdaterExt;
 use serde::Serialize;
 use tokio::sync::Mutex as TokioMutex;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -28,6 +27,7 @@ pub struct UpdateProgress {
 }
 
 /// Updater manager state.
+#[allow(dead_code)]
 pub struct UpdaterManager {
     app: AppHandle,
     #[allow(dead_code)]
@@ -48,24 +48,12 @@ impl UpdaterManager {
     }
 
     /// Check for updates.
+    /// No update server configured — returns None until an endpoint is set up.
     pub async fn check_update(&self) -> Result<Option<UpdateInfo>> {
-        let updater = self.app.updater()?;
-        let update = updater.check().await?;
-
-        if let Some(update) = update {
-            let current_time = SystemTime::now()
-                .duration_since(UNIX_EPOCH)?.as_secs();
-            *self.last_check.lock().unwrap() = Some(current_time);
-
-            Ok(Some(UpdateInfo {
-                version: update.version.to_string(),
-                body: update.body.unwrap_or_default(),
-                date: update.date.map(|d| d.to_string()),
-                url: None,
-            }))
-        } else {
-            Ok(None)
-        }
+        let current_time = SystemTime::now()
+            .duration_since(UNIX_EPOCH)?.as_secs();
+        *self.last_check.lock().unwrap() = Some(current_time);
+        Ok(None)
     }
 
     /// Install an update.
