@@ -1,93 +1,315 @@
 # Messenger Desktop
 
-[![Build Status](https://github.com/example/messenger-desktop/actions/workflows/build.yml/badge.svg)](https://github.com/example/messenger-desktop/actions/workflows/build.yml)
-[![Release](https://img.shields.io/github/v/release/example/messenger-desktop)](https://github.com/example/messenger-desktop/releases)
+[![Build Status](https://github.com/wickedtech/messenger-desktop/actions/workflows/build.yml/badge.svg)](https://github.com/wickedtech/messenger-desktop/actions/workflows/build.yml)
+[![Release](https://img.shields.io/github/v/release/wickedtech/messenger-desktop)](https://github.com/wickedtech/messenger-desktop/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Native Facebook Messenger desktop app powered by Tauri 2.x. 10x smaller than Electron.**
+**A native Facebook Messenger desktop client built with Tauri 2.x and Rust. 10x smaller than Electron.**
 
-## Features
+Messenger Desktop wraps [`messenger.com`](https://messenger.com) in a native WebView while extending its functionality with powerful system integrations. Get notifications, system tray support, privacy controls, and multi-account support without the bloat of Electron.
 
-- **WebView Wrapper**: Lightweight wrapper around messenger.com with native performance.
-- **Native Notifications**: System notifications for new messages.
-- **System Tray Integration**: Unread badge and quick access from the system tray.
-- **Global Shortcuts**: Open the app with `Ctrl+Shift+M` (customizable).
-- **Themes**: Dark mode, custom themes, and theme switching.
-- **Privacy Controls**: Block typing indicators, read receipts, and more.
-- **Multi-Account Support**: Switch between multiple Facebook accounts seamlessly.
-- **Settings Panel**: Customize behavior, appearance, and privacy settings.
-- **Auto-Updater**: Stay up-to-date with the latest features and fixes.
-- **Cross-Platform CI**: Builds for Linux, Windows, and macOS via GitHub Actions.
+---
 
-## Screenshots
+## ✨ Features
 
-*(Coming soon!)*
+- **🔔 Native Notifications** - Get system notifications for new messages immediately
+- **📊 System Tray Integration** - Access Messenger quickly with unread badge count
+- **🎯 Keyboard Shortcuts** - Global shortcuts to toggle the window (`Ctrl+Shift+M`)
+- **🌙 Themes** - Dark mode, light mode, and system theme support
+- **🔒 Privacy Guard** - Block typing indicators, read receipts, and seen status
+- **👥 Multi-Account Support** - Switch between multiple Facebook accounts seamlessly
+- **📝 Spell Check** - Native spell check support while typing
+- **🎥 Media Permissions** - Camera and microphone access for voice/video calls
+- **🔄 Auto-Updater** - Stay up-to-date with automatic updates
+- **🚀 Lightweight** - Only ~10MB compared to ~100MB for Electron apps
+- **💾 Low Memory** - ~200MB RAM vs ~800MB for Electron alternatives
 
-## Download
+---
 
-Download the latest version from the [GitHub Releases](https://github.com/example/messenger-desktop/releases) page.
+## 📸 Screenshots
 
-## Build From Source
+<!-- Screenshots coming soon! -->
+
+---
+
+## 📥 Installation
+
+### Pre-built Releases
+
+Download the latest stable release for your platform from the [GitHub Releases page](https://github.com/wickedtech/messenger-desktop/releases).
+
+| Platform | File Size |
+|----------|-----------|
+| **Windows** (x64) | ~10 MB |
+| **macOS** (Apple Silicon x86_64) | ~12 MB |
+| **Linux** (AppImage, DEB, RPM) | ~11 MB |
+
+### Package Managers
+
+#### Homebrew (macOS/Linux)
+
+```bash
+brew install --cask messenger-desktop
+```
+
+#### Snap (Linux)
+
+```bash
+sudo snap install messenger-desktop
+```
+
+#### AUR (Arch Linux)
+
+```bash
+paru -S messenger-desktop
+```
+
+---
+
+## 🛠️ Build from Source
 
 ### Prerequisites
 
-- [Rust toolchain](https://www.rust-lang.org/tools/install)
-- [Node.js 18+](https://nodejs.org/)
-- Linux: `libwebkit2gtk-4.1-dev`, `libappindicator3-dev`, `librsvg2-dev`, `patchelf`
+- **Rust** 1.70+ (stable toolchain)
+  ```bash
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+  ```
+- **Node.js** 18+ or 20+
+  ```bash
+  # Using nvm (recommended)
+  nvm install 20
+  nvm use 20
+  ```
+- **System Dependencies** (Linux only)
+  ```bash
+  # Debian/Ubuntu
+  sudo apt update
+  sudo apt install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
-### Steps
+  # Fedorap
+  sudo dnf install -y webkit2gtk4.1-devel appindicator-gtk3-devel
 
-1. Clone the repository:
-   ```sh
-   git clone https://github.com/example/messenger-desktop.git
-   cd messenger-desktop
-   ```
+  # Arch Linux
+  sudo pacman -S webkit2gtk-4.1 libappindicator-gtk3 librsvg
+  ```
 
-2. Install dependencies:
-   ```sh
-   npm install
-   ```
+### Clone & Build
 
-3. Run in development mode:
-   ```sh
-   npm run tauri dev
-   ```
+```bash
+# Clone the repository
+git clone https://github.com/wickedtech/messenger-desktop.git
+cd messenger-desktop
 
-4. Build for production:
-   ```sh
-   npm run tauri build
-   ```
+# Install JavaScript dependencies
+npm install
 
-## Project Structure
+# Run in development mode
+npm run tauri dev
 
+# Build for production
+npm run tauri build
 ```
-.
-├── src-tauri/          # Rust backend
-│   ├── src/            # Tauri commands and modules
-│   ├── build.rs        # Build script
-│   └── Cargo.toml      # Rust dependencies
-├── src/               # Frontend (TypeScript/React)
-├── public/            # Static assets
-├── .github/workflows/ # CI/CD pipelines
-└── README.md          # This file
+
+The production build artifacts will be in `src-tauri/target/release/bundle/`.
+
+---
+
+## ⚙️ Configuration
+
+Messenger Desktop stores configuration in the platform-specific app data directory:
+
+| Platform | Config Location |
+|----------|-----------------|
+| **Linux** | `~/.config/messenger-desktop/` |
+| **macOS** | `~/Library/Application Support/messenger-desktop/` |
+| **Windows** | `%APPDATA%\messenger-desktop\` |
+
+### Key Settings
+
+- **Theme**: Choose between light, dark, or follow system theme
+- **Privacy**: Enable/disable typing indicators, read receipts, seen status
+- **Notifications**: Configure notification style (native/banners/sounds)
+- **Shortcuts**: Customize global hotkeys for toggling window
+- **Accounts**: Manage logged-in accounts and switching behavior
+- **Startup**: Launch app on system boot
+
+---
+
+## ⌨️ Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+Shift+M` | Toggle window show/hide (global) |
+| `Ctrl+N` | Open new conversation |
+| `Ctrl+,` | Open settings |
+| `Ctrl+1`...`Ctrl+9` | Switch to account 1-9 |
+| `Ctrl+Tab` | Switch to next open chat |
+| `Ctrl+Shift+Tab` | Switch to previous open chat |
+| `Ctrl+W` | Close current chat |
+| `Escape` | Close window or dismiss dialogs |
+| `Ctrl+Q` | Quit application (macOS: `Cmd+Q`) |
+
+*Note: On macOS, replace `Ctrl` with `Cmd`.*
+
+---
+
+## 🔒 Privacy Features
+
+Messenger Desktop includes a robust privacy guard that intercepts and blocks tracking features:
+
+- **🚫 Block Typing Indicators** - The other user won't see when you're typing
+- **🚫 Block Read Receipts** - Messages won't be marked as "seen"
+- **🚫 Block Seen Status** - Your presence status won't be updated
+- **🚫 Block Delivery Receipts** - Message delivery status won't be sent
+- **🚫 Block Message Reactions** - Emoji reactions won't be transmitted
+
+These features work at the network layer by intercepting XHR/fetch requests before they leave the WebView. The original Messenger UI is not modified, so the experience feels authentic.
+
+---
+
+## 🏗️ Architecture
+
+Messenger Desktop uses a hybrid architecture:
+
+1. **WebView Layer** - Loads `messenger.com` in a lightweight browser window
+2. **JS Injection Layer** - Custom scripts injected to intercept network requests and DOM events
+3. **Rust Backend** - Native system integrations (tray, notifications, themes, etc.)
+4. **IPC Bridge** - Communication between WebView and Rust via Tauri's IPC system
+
+For detailed architecture documentation, see [`ARCHITECTURE.md`](ARCHITECTURE.md).
+
+---
+
+## 📦 Module Overview
+
+The Rust backend is organized into focused modules:
+
+| Module | Description |
+|--------|-------------|
+| `accounts` | Multi-account session management |
+| `commands` | Tauri command handlers |
+| `drag_drop` | File drag-and-drop support |
+| `media` | Camera/microphone permissions for calls |
+| `notifications` | Native system notifications |
+| `privacy` | Privacy guard (block typing, read receipts) |
+| `shortcuts` | Global keyboard shortcuts |
+| `spellcheck` | Native spell check integration |
+| `theme_manager` | Theme switching (dark/light/system) |
+| `tray` | System tray icon and unread badge |
+| `updater` | Automatic update checking |
+| `window_manager` | Window lifecycle and positioning |
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions from both humans and AI agents! For detailed guidelines, see [`CONTRIBUTING.md`](CONTRIBUTING.md) for human contributors and [`CONTRIBUTING-AGENTS.md`](CONTRIBUTING-AGENTS.md) for AI agents.
+
+### Quick Start for Humans
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Run tests (`cargo test` and `npm test`)
+5. Commit with conventional commits (`feat: add amazing feature`)
+6. Push to your fork (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
+
+### Quick Start for AI Agents
+
+See [`CONTRIBUTING-AGENTS.md`](CONTRIBUTING-AGENTS.md) for:
+- Architecture overview and module map
+- Development workflow (clone → setup → build → test)
+- Code style guidelines
+- PR conventions
+- Testing requirements
+
+---
+
+## 🐛 Troubleshooting
+
+### Notifications not showing on Linux
+Ensure you have `libnotify` and Gnome/KDE notification daemon running:
+```bash
+# Ubuntu/Debian
+sudo apt install libnotify-bin
+
+# Test notifications
+notify-send "Test" "Notification works!"
 ```
 
-## Comparison with Caprine (Electron)
+### Spell check not working
+Install system spell check dictionaries:
+```bash
+# Linux (hunspell)
+sudo apt install hunspell-en-us  # English
+sudo apt install hunspell-fr     # French
 
-| Feature               | Messenger Desktop (Tauri) | Caprine (Electron) |
-|-----------------------|---------------------------|--------------------|
-| **Binary Size**       | ~10MB                     | ~100MB             |
-| **Memory Usage**      | ~200MB                    | ~800MB             |
-| **Startup Time**      | <1s                       | ~3s                |
-| **Native Features**   | Yes (tray, notifications) | Limited            |
-| **Privacy Controls**  | Yes                       | No                 |
-| **Auto-Updater**      | Yes                       | Yes                |
-| **Cross-Platform**    | Yes                       | Yes                |
+# macOS
+# Spell check uses built-in dictionaries
 
-## Contributing
+# Windows
+# Spell check uses OS spell check (Windows 10/11 only)
+```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+### App won't launch (permissions denied)
+Ensure the binary has execute permissions:
+```bash
+chmod +x messenger-desktop
+```
 
-## License
+For Linux AppImage, extract and run directly:
+```bash
+./Messenger-Desktop-x.y.z.AppImage
+```
 
-This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for details.
+### Theme not following system
+Set the theme to "System" in settings, then ensure your OS theme is properly configured:
+- **GNOME (Linux)**: Settings → Appearance
+- **KDE (Linux)**: System Settings → Appearance → Global Theme
+- **macOS**: System Settings → Appearance
+- **Windows**: Settings → Personalization → Colors
+
+---
+
+## 🔭 Comparison with Caprine (Electron)
+
+| Feature | Messenger Desktop | Caprine |
+|---------|-------------------|---------|
+| **Binary Size** | ~10 MB | ~100 MB |
+| **Memory Usage** | ~200 MB | ~800 MB |
+| **Startup Time** | <1s | ~3s |
+| **Custom Themes** | Yes | Yes |
+| **Privacy Controls** | Advanced | Basic |
+| **Multi-Account** | Yes | No |
+| **Spell Check** | Native | Limited |
+| **Auto-Updater** | Yes | Yes |
+| **Tech Stack** | Tauri + Rust | Electron + Node |
+
+---
+
+## 📜 License
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- [Tauri](https://tauri.app/) - The framework that makes this possible
+- [Caprine](https://github.com/sindresorhus/caprine) - Inspiration and reference
+- [Messenger](https://messenger.com) - The web app we wrap
+
+---
+
+## 📞 Support
+
+- **GitHub Issues**: [Open an issue](https://github.com/wickedtech/messenger-desktop/issues) for bugs and feature requests
+- **Discussions**: [Join discussions](https://github.com/wickedtech/messenger-desktop/discussions) for community support
+- **Documentation**: Check [`ARCHITECTURE.md`](ARCHITECTURE.md) for technical deep dives
+
+---
+
+<p align="center">
+  <i>Made with ❤️ by the wickedtech team</i>
+</p>
