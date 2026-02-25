@@ -22,13 +22,17 @@ use crate::updater::{check_update, install_update};
 use crate::accounts::{list_accounts, add_account, remove_account};
 use crate::media::grant_media_permission;
 use crate::drag_drop::handle_file_drop;
+use crate::platform_manager::{PlatformManager, select_platform, get_current_platform, get_last_platform, list_platforms};
+use crate::privacy_engine::{PrivacyEngine, clear_platform_session, clear_all_sessions, get_csp_for_platform};
 
 mod accounts;
 mod drag_drop;
 mod media;
 mod notifications;
 mod platform;
+mod platform_manager;
 mod privacy;
+mod privacy_engine;
 mod shortcuts;
 mod spellcheck;
 mod theme_manager;
@@ -88,6 +92,10 @@ pub fn run() {
             // Initialize shortcut manager
             let shortcut_manager = crate::shortcuts::ShortcutManager::new();
 
+            // Initialize platform manager and privacy engine
+            let platform_manager = PlatformManager::new(&app_data_dir);
+            let privacy_engine = PrivacyEngine::new(app_data_dir.clone());
+
             app.manage(notif_service);
             app.manage(privacy_manager);
             app.manage(theme_manager);
@@ -96,11 +104,21 @@ pub fn run() {
             app.manage(tray);
             app.manage(window_manager);
             app.manage(std::sync::Mutex::new(shortcut_manager));
+            app.manage(platform_manager);
+            app.manage(privacy_engine);
 
             // Initialize platform-specific features
             platform::init(&handle);
 
             Ok(())
+        })
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { .. } = event {
+                let engine = window.app_handle().state::<crate::privacy_engine::PrivacyEngine>();
+                if let Err(e) = engine.clear_all_sessions() {
+                    log::warn!("[on_quit] failed to clear sessions: {}", e);
+                }
+            }
         })
         .invoke_handler(tauri::generate_handler![
             // Notifications
@@ -181,6 +199,17 @@ pub fn run() {
 
             // Drag & Drop
             handle_file_drop,
+
+            // Platform
+            select_platform,
+            get_current_platform,
+            get_last_platform,
+            list_platforms,
+
+            // Privacy Engine
+            clear_platform_session,
+            clear_all_sessions,
+            get_csp_for_platform,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
