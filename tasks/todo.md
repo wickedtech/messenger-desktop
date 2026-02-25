@@ -17,4 +17,4 @@
 
 ## Commit
 
-- [ ] Commit all fixes with message: `fix(tray): fix macOS tray menu - window label, event listeners, state management`
+- [x] Commit all fixes with message: `fix(tray): fix macOS tray menu - window label, event listeners, state management`

@@ -1,1 +1,1 @@
-{}
+{"default":{"identifier":"default","description":"Default capabilities for Messenger Desktop","local":true,"windows":["main"],"permissions":["core:default","core:tray:default","core:window:default","notification:default","clipboard-manager:default","global-shortcut:default","shell:default","autostart:default","store:default"]}}
