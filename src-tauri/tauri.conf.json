@@ -16,8 +16,8 @@
       "icons/icon.png"
     ],
     "category": "Social Networking",
-    "shortDescription": "Native Messenger desktop client",
-    "longDescription": "A native desktop wrapper for Facebook Messenger with notifications, system tray, multi-account support, dark/light themes, global keyboard shortcuts, and auto-updater.",
+    "shortDescription": "Privacy-first multi-platform social hub",
+    "longDescription": "Native desktop client for Instagram, Messenger, Facebook, and X with session isolation and zero cookie persistence.",
     "macOS": {
       "minimumSystemVersion": "10.15",
       "signingIdentity": "-",
@@ -54,16 +54,15 @@
   "app": {
     "windows": [
       {
-        "title": "Messenger",
+        "title": "Social Hub",
         "width": 1200,
         "height": 800,
         "resizable": true,
-        "fullscreen": false,
-        "url": "https://www.messenger.com"
+        "fullscreen": false
       }
     ],
     "security": {
-      "csp": "default-src https://www.messenger.com https://*.messenger.com https://*.facebook.com https://*.fbcdn.net;"
+      "csp": "default-src 'self' tauri://localhost https://www.messenger.com https://*.messenger.com https://*.facebook.com https://*.fbcdn.net https://www.instagram.com https://*.instagram.com https://*.cdninstagram.com https://x.com https://*.x.com https://*.twimg.com; img-src * data: blob:; media-src * blob:; connect-src *; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';"
     }
   }
 }

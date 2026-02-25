@@ -1,10 +1,12 @@
 //! Privacy Engine for multi-platform session isolation and privacy enforcement.
 //! Provides session directory management, cookie clearing, and Content Security Policy (CSP) per platform.
 
+use std::path::PathBuf;
+
 /// Privacy Engine for managing session isolation and privacy enforcement.
 #[derive(Debug)]
 pub struct PrivacyEngine {
-    app_data_dir: std::path::PathBuf,
+    app_data_dir: PathBuf,
 }
 
 impl PrivacyEngine {
@@ -17,7 +19,7 @@ impl PrivacyEngine {
     /// # Returns
     ///
     /// A new `PrivacyEngine` instance.
-    pub fn new(app_data_dir: std::path::PathBuf) -> Self {
+    pub fn new(app_data_dir: PathBuf) -> Self {
         Self { app_data_dir }
     }
 
@@ -30,7 +32,7 @@ impl PrivacyEngine {
     /// # Returns
     ///
     /// The session directory path.
-    pub fn session_dir(&self, platform: &str) -> std::path::PathBuf {
+    pub fn session_dir(&self, platform: &str) -> PathBuf {
         self.app_data_dir.join("sessions").join(platform)
     }
 
@@ -95,6 +97,7 @@ impl PrivacyEngine {
     /// # Returns
     ///
     /// `true` if the URL contains a blocked domain, `false` otherwise.
+    #[allow(dead_code)]
     pub fn is_blocked_domain(url: &str) -> bool {
         ["doubleclick.net","googlesyndication.com","google-analytics.com",
          "analytics.facebook.com","pixel.facebook.com"]

@@ -5,6 +5,7 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
+use tauri::Url;
 
 /// Represents the supported social media platforms
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -87,7 +88,7 @@ impl PlatformManager {
             let content = fs::read_to_string(&self.store_path).ok()?;
             let platform = serde_json::from_str::<String>(&content).ok()?;
             Platform::from_str(&platform).map(|p| {
-                *self.current.lock().unwrap() = Some(p);
+                *self.current.lock().unwrap() = Some(p.clone());
                 p
             })
         } else {
@@ -117,8 +118,10 @@ pub fn select_platform(
         .ok_or_else(|| format!("Unknown platform: {}", platform_name))?;
 
     manager.set_current(platform.clone());
+    let url = Url::parse(platform.url())
+        .map_err(|e| format!("Invalid platform URL: {}", e))?;
     window
-        .navigate(platform.url())
+        .navigate(url)
         .map_err(|e| format!("Failed to navigate: {}", e))?;
 
     Ok(format!("Selected platform: {}", platform.name()))

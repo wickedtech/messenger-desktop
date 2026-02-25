@@ -1,7 +1,7 @@
 // Main entry point for the Tauri app frontend.
 // Initializes the app, sets up event listeners, and manages state.
 
-import { invoke } from '@tauri-apps/api/tauri';
+import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { registerShortcuts } from './keyboard-shortcuts';
