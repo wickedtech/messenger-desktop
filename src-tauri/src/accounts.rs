@@ -155,54 +155,54 @@ impl AccountManager {
 /// Tauri command: Add an account.
 #[tauri::command]
 pub fn add_account(state: tauri::State<'_, std::sync::Mutex<AccountManager>>, name: String) -> Result<Account, String> {
-    state.lock().unwrap().add_account(name).map_err(|e| e.to_string())
+    state.lock().map_err(|e| format!("Lock error: {}", e))?.add_account(name).map_err(|e| e.to_string())
 }
 
 /// Tauri command: Remove an account.
 #[tauri::command]
 pub fn remove_account(state: tauri::State<'_, std::sync::Mutex<AccountManager>>, id: String) -> Result<(), String> {
-    state.lock().unwrap().remove_account(&id).map_err(|e| e.to_string())
+    state.lock().map_err(|e| format!("Lock error: {}", e))?.remove_account(&id).map_err(|e| e.to_string())
 }
 
 /// Tauri command: Switch to an account.
 #[tauri::command]
 #[allow(dead_code)]
 pub fn switch_account(state: tauri::State<'_, std::sync::Mutex<AccountManager>>, id: String) -> Result<(), String> {
-    state.lock().unwrap().switch_account(&id).map_err(|e| e.to_string())
+    state.lock().map_err(|e| format!("Lock error: {}", e))?.switch_account(&id).map_err(|e| e.to_string())
 }
 
 /// Tauri command: List all accounts.
 #[tauri::command]
 pub fn list_accounts(state: tauri::State<'_, std::sync::Mutex<AccountManager>>) -> Vec<Account> {
-    state.lock().unwrap().list_accounts()
+    state.lock().map_err(|e| format!("Lock error: {}", e))?.list_accounts()
 }
 
 /// Tauri command: Set profile picture for an account.
 #[tauri::command]
 #[allow(dead_code)]
 pub fn set_profile_picture(state: tauri::State<'_, std::sync::Mutex<AccountManager>>, id: String, path: String) -> Result<(), String> {
-    state.lock().unwrap().set_profile_picture(&id, &path).map_err(|e| e.to_string())
+    state.lock().map_err(|e| format!("Lock error: {}", e))?.set_profile_picture(&id, &path).map_err(|e| e.to_string())
 }
 
 /// Tauri command: Set session token for an account.
 #[tauri::command]
 #[allow(dead_code)]
 pub fn set_session_token(state: tauri::State<'_, std::sync::Mutex<AccountManager>>, id: String, token: String) -> Result<(), String> {
-    state.lock().unwrap().set_session_token(&id, &token).map_err(|e| e.to_string())
+    state.lock().map_err(|e| format!("Lock error: {}", e))?.set_session_token(&id, &token).map_err(|e| e.to_string())
 }
 
 /// Tauri command: Get session token for an account.
 #[tauri::command]
 #[allow(dead_code)]
 pub fn get_session_token(state: tauri::State<'_, std::sync::Mutex<AccountManager>>, id: String) -> Option<String> {
-    state.lock().unwrap().get_session_token(&id)
+    state.lock().map_err(|e| format!("Lock error: {}", e))?.get_session_token(&id)
 }
 
 /// Tauri command: Update last sync time for an account.
 #[tauri::command]
 #[allow(dead_code)]
 pub fn update_last_sync(state: tauri::State<'_, std::sync::Mutex<AccountManager>>, id: String) -> Result<(), String> {
-    state.lock().unwrap().update_last_sync(&id).map_err(|e| e.to_string())
+    state.lock().map_err(|e| format!("Lock error: {}", e))?.update_last_sync(&id).map_err(|e| e.to_string())
 }
 
 // Unit tests

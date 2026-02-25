@@ -1,6 +1,6 @@
 # Messenger Desktop
 
-[![Build Status](https://github.com/wickedtech/messenger-desktop/actions/workflows/build.yml/badge.svg)](https://github.com/wickedtech/messenger-desktop/actions/workflows/build.yml)
+![CI](https://github.com/wickedtech/messenger-desktop/actions/workflows/build.yml/badge.svg)
 [![Release](https://img.shields.io/github/v/release/wickedtech/messenger-desktop)](https://github.com/wickedtech/messenger-desktop/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -29,6 +29,32 @@ Messenger Desktop wraps [`messenger.com`](https://messenger.com) in a native Web
 ## 📸 Screenshots
 
 <!-- Screenshots coming soon! -->
+
+---
+
+## 🚀 Quick Start
+
+```bash
+# Clone and install
+git clone https://github.com/wickedtech/messenger-desktop.git
+cd messenger-desktop
+npm install
+
+# Run in development mode (hot reload)
+npm run tauri dev
+
+# Run tests
+cd src-tauri
+cargo test --all
+
+# Build for production
+cd ..
+npm run tauri build
+
+# Build artifacts are in: src-tauri/target/release/bundle/
+```
+
+See [Build from Source](#-build-from-source) for detailed prerequisites and platform-specific instructions.
 
 ---
 
@@ -169,14 +195,58 @@ These features work at the network layer by intercepting XHR/fetch requests befo
 
 ## 🏗️ Architecture
 
-Messenger Desktop uses a hybrid architecture:
+Messenger Desktop uses a hybrid architecture with Tauri's IPC bridge connecting the WebView frontend to the Rust backend:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    WebView Layer                            │
+│              (messenger.com + Injected JS)                  │
+│                                                              │
+│  Injected Scripts:                                          │
+│  • privacy-guard.js  (block typing, read receipts)         │
+│  • theme-injection.js  (custom CSS themes)                 │
+│  • keyboard-shortcuts.js  (intercept key events)           │
+│  • notification-interceptor.js  (forward events)           │
+└─────────────────────────────┬───────────────────────────────┘
+                              │ Tauri IPC (invoke/emit)
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   Rust Backend Modules                      │
+│                                                              │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │   accounts   │  │  tray        │  │ notifications│      │
+│  │ (accounts.rs)│  │ (tray.rs)    │  │ (notifications│      │
+│  │              │  │              │  │    .rs)      │      │
+│  └──────────────┘  └──────────────┘  └──────────────┘      │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │   privacy    │  │  shortcuts   │  │ spellcheck   │      │
+│  │ (privacy.rs) │  │(shortcuts.rs)│  │(spellcheck.  │      │
+│  │              │  │              │  │    rs)       │      │
+│  └──────────────┘  └──────────────┘  └──────────────┘      │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │theme_manager │  │    media     │  │   updater    │      │
+│  │(theme_mgr.rs)│  │  (media.rs)  │  │ (updater.rs) │      │
+│  │              │  │              │  │              │      │
+│  └──────────────┘  └──────────────┘  └──────────────┘      │
+│  ┌──────────────┐  ┌──────────────┐                       │
+│  │drag_drop     │  │window_manager│                       │
+│  │(drag_drop.rs)│  │(window_mgr.rs│                       │
+│  │              │  │    .rs)      │                       │
+│  └──────────────┘  └──────────────┘                       │
+│                                                              │
+│  ┌────────────────────────────────────────────┐           │
+│  │         Platform Abstraction Layer         │           │
+│  │  platform/linux.rs │ macos.rs │ windows.rs │          │
+│  └────────────────────────────────────────────┘           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**How it works:**
 
 1. **WebView Layer** - Loads `messenger.com` in a lightweight browser window
 2. **JS Injection Layer** - Custom scripts injected to intercept network requests and DOM events
 3. **Rust Backend** - Native system integrations (tray, notifications, themes, etc.)
-4. **IPC Bridge** - Communication between WebView and Rust via Tauri's IPC system
-
-For detailed architecture documentation, see [`ARCHITECTURE.md`](ARCHITECTURE.md).
+4. **IPC Bridge** - Bidirectional communication between WebView and Rust via Tauri's IPC system
 
 ---
 
@@ -228,7 +298,56 @@ See [`CONTRIBUTING-AGENTS.md`](CONTRIBUTING-AGENTS.md) for:
 
 ## 🐛 Troubleshooting
 
-### Notifications not showing on Linux
+### Build Errors
+
+#### Linux: `failed to run custom build command for gtk`
+```
+error: failed to run custom build command for gtk4-sys v0.x
+```
+**Solution:** Install required GTK dependencies:
+```bash
+sudo apt update
+sudo apt install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+```
+
+#### Linux: `package libwebkit2gtk-4.1-0 was not found`
+```bash
+# Ubuntu/Debian
+sudo apt install libwebkit2gtk-4.1-dev
+
+# Fedora
+sudo dnf install webkit2gtk4.1-devel
+
+# Arch Linux
+sudo pacman -S webkit2gtk-4.1
+```
+
+#### macOS: `error: linker 'cc' not found`
+**Solution:** Install Xcode Command Line Tools:
+```bash
+xcode-select --install
+```
+
+#### Windows: `error: linker 'link.exe' not found`
+**Solution:** Install [MSVC Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) or Visual Studio with C++ workload.
+
+#### Rust: `error: package 'xxx' failed to resolve`
+**Solution:** Update Rust toolchain and clear cargo cache:
+```bash
+rustup update stable
+cargo clean
+```
+
+#### Tauri CLI errors
+```bash
+# Reinstall Tauri CLI
+npm uninstall -D @tauri-apps/cli
+npm install -D @tauri-apps/cli@latest
+```
+
+### Runtime Issues
+
+#### Notifications not showing on Linux
 Ensure you have `libnotify` and Gnome/KDE notification daemon running:
 ```bash
 # Ubuntu/Debian
