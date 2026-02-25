@@ -46,44 +46,59 @@ mod window_manager;
 // Clipboard commands and print command are defined in their respective modules
 
 // Notification interceptor JS — injected into EVERY navigation including external URLs
+// Uses the official Tauri v2 notification plugin JS API (window.__TAURI__.notification)
+// No custom Rust command roundtrip needed — plugin handles permission + delivery directly.
 const NOTIFICATION_INTERCEPTOR_JS: &str = r#"
 (function() {
-    // Guard: only patch once per context
     if (window.__MESSENGER_DESKTOP_PATCHED__) { return; }
     window.__MESSENGER_DESKTOP_PATCHED__ = true;
 
     const OriginalNotification = window.Notification;
 
-    // Override window.Notification
+    async function sendViaTauri(title, options) {
+        try {
+            const notif = window.__TAURI__ && window.__TAURI__.notification;
+            if (!notif) {
+                // __TAURI__ not ready yet — fall back to original
+                if (OriginalNotification) new OriginalNotification(title, options);
+                return;
+            }
+
+            // Check / request permission using the official plugin API
+            let granted = await notif.isPermissionGranted();
+            if (!granted) {
+                const perm = await notif.requestPermission();
+                granted = (perm === 'granted');
+            }
+
+            if (granted) {
+                notif.sendNotification({
+                    title: String(title),
+                    body: (options && options.body) ? String(options.body) : '',
+                });
+            }
+        } catch (e) {
+            console.warn('[messenger-desktop] Tauri notification failed:', e);
+            if (OriginalNotification) new OriginalNotification(title, options);
+        }
+    }
+
+    // Override window.Notification constructor
     window.Notification = function(title, options) {
         options = options || {};
-        // Route to Tauri handle_notification command
-        if (window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke) {
-            window.__TAURI__.core.invoke('handle_notification', {
-                title: String(title),
-                options: {
-                    body: options.body || '',
-                    icon: options.icon || null,
-                    tag: options.tag || null,
-                    silent: options.silent || false
-                }
-            }).catch(function(e) { console.warn('[notification] invoke failed:', e); });
-        } else if (OriginalNotification) {
-            return new OriginalNotification(title, options);
-        }
+        sendViaTauri(String(title), options);
     };
 
-    window.Notification.permission = 'granted';
+    // Keep static API intact so sites don't bail out early
+    Object.defineProperty(window.Notification, 'permission', {
+        get: function() { return 'granted'; },
+        configurable: true,
+    });
     window.Notification.requestPermission = function() {
         return Promise.resolve('granted');
     };
 
-    Object.defineProperty(window.Notification, 'permission', {
-        get: function() { return 'granted'; },
-        configurable: true
-    });
-
-    console.log('[messenger-desktop] Notification interceptor active');
+    console.log('[messenger-desktop] Notification interceptor active (plugin API)');
 })();
 "#;
 
@@ -113,6 +128,15 @@ pub fn run() {
             .initialization_script(NOTIFICATION_INTERCEPTOR_JS)
             .build()
             .expect("failed to create main window");
+
+            // Request notification permission at startup (desktop only).
+            // Must happen before any notification.show() call — macOS silently drops
+            // notifications if permission was never requested.
+            #[cfg(desktop)]
+            {
+                use tauri_plugin_notification::NotificationExt;
+                let _ = app.notification().request_permission();
+            }
 
             let handle = app.handle().clone();
             let app_data_dir = app
