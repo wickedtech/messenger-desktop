@@ -4,7 +4,7 @@ version = "0.2.4"
 edition = "2021"
 
 [dependencies]
-tauri = { version = "2.0", features = ["tray-icon"] }
+tauri = { version = "2.0", features = ["tray-icon", "devtools"] }
 tauri-plugin-notification = "2.0"
 tauri-plugin-store = "2.0"
 tauri-plugin-autostart = "2.0"
@@ -23,6 +23,8 @@ anyhow = "1.0"
 specta = { version = "2.0.0-rc.22", features = ["derive", "function"] }
 chrono = { version = "0.4", features = ["serde"] }
 tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+tracing-log = "0.2"
 log = "0.4"
 uuid = { version = "1.0", features = ["v4"] }
 mime_guess = "2.0"

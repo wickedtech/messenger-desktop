@@ -3,6 +3,8 @@
 
 use tauri::{Manager, WebviewWindowBuilder, WebviewUrl};
 
+use crate::debug::{open_devtools, close_devtools, toggle_devtools, is_devtools_open};
+
 // Import all the command functions
 use crate::notifications::{
     show_notification, set_dnd, toggle_dnd, is_dnd_enabled, set_notification_sound,
@@ -29,6 +31,7 @@ use crate::platform_manager::{PlatformManager, select_platform, get_current_plat
 use crate::privacy_engine::{PrivacyEngine, clear_platform_session, clear_all_sessions, get_csp_for_platform};
 
 mod accounts;
+mod debug;
 mod drag_drop;
 mod media;
 mod notifications;
@@ -104,6 +107,9 @@ const NOTIFICATION_INTERCEPTOR_JS: &str = r#"
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let _span = tracing::info_span!("app::run").entered();
+    tracing::info!("Initializing Tauri application");
+
     tauri::Builder::default()
         // Plugins
         .plugin(tauri_plugin_shell::init())
@@ -128,6 +134,13 @@ pub fn run() {
             .initialization_script(NOTIFICATION_INTERCEPTOR_JS)
             .build()
             .expect("failed to create main window");
+
+            // Auto-open DevTools in debug builds so you can inspect immediately.
+            #[cfg(debug_assertions)]
+            {
+                _main_window.open_devtools();
+                tracing::debug!("[setup] DevTools auto-opened (debug build)");
+            }
 
             // Request notification permission at startup (desktop only).
             // Must happen before any notification.show() call — macOS silently drops
@@ -299,6 +312,12 @@ pub fn run() {
             clear_platform_session,
             clear_all_sessions,
             get_csp_for_platform,
+
+            // Debug / DevTools
+            open_devtools,
+            close_devtools,
+            toggle_devtools,
+            is_devtools_open,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
