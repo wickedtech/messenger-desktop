@@ -154,3 +154,44 @@ pub fn get_csp_for_platform(platform: String) -> String {
 //     let _ = window.app_handle().state::<PrivacyEngine>().clear_all_sessions();
 //   }
 // });
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_session_dir() {
+        let engine = PrivacyEngine::new(PathBuf::from("/tmp/test-privacy"));
+        let dir = engine.session_dir("Instagram");
+        assert!(dir.to_str().unwrap().contains("Instagram"));
+    }
+
+    #[test]
+    fn test_clear_session_creates_dir() {
+        let tmp = std::env::temp_dir().join("test-privacy-engine");
+        let engine = PrivacyEngine::new(tmp.clone());
+        let result = engine.clear_session("TestPlatform");
+        assert!(result.is_ok());
+        assert!(engine.session_dir("TestPlatform").exists());
+        let _ = std::fs::remove_dir_all(&tmp);
+    }
+
+    #[test]
+    fn test_csp_per_platform() {
+        let csp = PrivacyEngine::csp_for_platform("Instagram");
+        assert!(csp.contains("instagram.com"));
+        let csp_x = PrivacyEngine::csp_for_platform("X");
+        assert!(csp_x.contains("x.com"));
+        let csp_fb = PrivacyEngine::csp_for_platform("Facebook");
+        assert!(csp_fb.contains("facebook.com"));
+    }
+
+    #[test]
+    fn test_blocked_domains() {
+        assert!(PrivacyEngine::is_blocked_domain("https://www.doubleclick.net/ad"));
+        assert!(PrivacyEngine::is_blocked_domain("https://analytics.facebook.com/track"));
+        assert!(!PrivacyEngine::is_blocked_domain("https://www.messenger.com/messages"));
+        assert!(!PrivacyEngine::is_blocked_domain("https://x.com/home"));
+    }
+}

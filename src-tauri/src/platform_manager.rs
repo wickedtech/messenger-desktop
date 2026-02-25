@@ -149,3 +149,32 @@ pub fn list_platforms() -> Vec<serde_json::Value> {
         serde_json::json!({"name": "X", "url": Platform::X.url()}),
     ]
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_platform_urls() {
+        assert_eq!(Platform::Instagram.url(), "https://www.instagram.com/direct/inbox/");
+        assert_eq!(Platform::Messenger.url(), "https://www.messenger.com");
+        assert_eq!(Platform::Facebook.url(), "https://www.facebook.com/messages/");
+        assert_eq!(Platform::X.url(), "https://x.com/messages");
+    }
+
+    #[test]
+    fn test_platform_from_str() {
+        assert!(Platform::from_str("Instagram").is_some());
+        assert!(Platform::from_str("Messenger").is_some());
+        assert!(Platform::from_str("Facebook").is_some());
+        assert!(Platform::from_str("X").is_some());
+        assert!(Platform::from_str("TikTok").is_none());
+        assert!(Platform::from_str("").is_none());
+    }
+
+    #[test]
+    fn test_platform_names() {
+        assert_eq!(Platform::Instagram.name(), "Instagram");
+        assert_eq!(Platform::X.name(), "X");
+    }
+}
