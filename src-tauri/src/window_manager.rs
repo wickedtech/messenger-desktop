@@ -644,8 +644,8 @@ mod tests {
 
     #[test]
     fn test_window_manager_new() {
-        let _manager = WindowManager::new(PathBuf::from("/tmp"));
-        // Manager instantiated successfully
+        let manager = WindowManager::new(PathBuf::from("/tmp"));
+        // Just verify the function compiles and manager exists
         assert!(true);
     }
 
