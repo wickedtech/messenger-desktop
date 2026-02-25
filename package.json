@@ -1,6 +1,6 @@
 {
   "name": "messenger-desktop",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "private": true,
   "devDependencies": {
     "@tauri-apps/cli": "^2.0.0"
