@@ -35,7 +35,10 @@ pub fn send_dbus_notification(title: &str, body: &str, icon: &str) {
 /// - `exec_path`: Path to the executable.
 #[allow(dead_code)]
 pub fn generate_desktop_file(app_name: &str, exec_path: &str) {
-    let home = home_dir().expect("Failed to get home directory");
+    let Some(home) = home_dir() else {
+        log::error!("generate_desktop_file: home directory not found");
+        return;
+    };
     let desktop_dir = home.join(".local/share/applications");
     let desktop_path = desktop_dir.join(format!(
         "{}.desktop",

@@ -65,18 +65,18 @@ Each module has a focused responsibility. When contributing, work on one module 
 
 | Module | File | Purpose | Key Functions |
 |--------|------|---------|---------------|
-| **Accounts** | `accounts.rs` | Multi-account session management | `switch_account()`, `list_accounts()`, `remove_account()` |
-| **Commands** | `commands.rs` | Tauri command registration | Registration exports for all modules |
-| **Drag & Drop** | `drag_drop.rs` | File upload via drag-and-drop | `handle_file_drop()`, `validate_attachment()` |
-| **Media** | `media.rs` | Camera/microphone permissions | `request_media_permission()`, `check_permission_status()` |
-| **Notifications** | `notifications.rs` | Native system notifications | `send_notification()`, `set_notification_actions()` |
-| **Privacy** | `privacy.rs` | Block typing/seen/read receipts | `toggle_typing_indicator()`, `toggle_read_receipts()` |
-| **Shortcuts** | `shortcuts.rs` | Global keyboard shortcuts | `register_global_hotkey()`, `unregister_hotkey()` |
-| **Spellcheck** | `spellcheck.rs` | Native spell check | `enable_spellcheck()`, `get_suggestions()` |
-| **Theme Manager** | `theme_manager.rs` | Theme switching | `set_theme()`, `get_theme()`, `apply_theme_to_webview()` |
-| **Tray** | `tray.rs` | System tray icon + badge | `create_tray_icon()`, `update_badge()`, `show_tray_menu()` |
-| **Updater** | `updater.rs` | Auto-update checking | `check_for_updates()`, `download_update()`, `install_update()` |
-| **Window Manager** | `window_manager.rs` | Window lifecycle | `create_window()`, `toggle_window()`, `position_window()` |
+| **Accounts** | `accounts.rs` | Multi-account session management | `add_account()`, `remove_account()`, `list_accounts()` |
+| **Commands** | `commands.rs` | Clipboard and print commands | `read_clipboard_text()`, `write_clipboard_text()`, `print_page()` |
+| **Drag & Drop** | `drag_drop.rs` | File upload via drag-and-drop | `handle_file_drop()`, `validate_files()` |
+| **Media** | `media.rs` | Camera/microphone permissions, file storage | `get_media_permissions()`, `save_media_file()`, `get_media_file_command()` |
+| **Notifications** | `notifications.rs` | Native system notifications, DND | `show_notification()`, `set_dnd()`, `get_notification_settings()` |
+| **Privacy** | `privacy.rs` | Block typing/seen/read receipts | `set_privacy()`, `get_privacy()`, `set_block_typing()`, `set_block_read_receipts()` |
+| **Shortcuts** | `shortcuts.rs` | Global keyboard shortcuts | `register_shortcuts()`, `update_shortcut()`, `unregister_shortcut()` |
+| **Spellcheck** | `spellcheck.rs` | Native spell check integration | `enable_spellcheck()`, `disable_spellcheck()`, `is_misspelled()`, `get_suggestions()` |
+| **Theme Manager** | `theme_manager.rs` | Theme switching and CSS injection | `set_theme()`, `get_themes()`, `set_custom_css()`, `current_theme_name()` |
+| **Tray** | `tray.rs` | System tray icon, unread badge, menu | `init_tray()`, `update_unread_count()`, `set_tray_tooltip()` |
+| **Updater** | `updater.rs` | Auto-update checking and installation | `check_update()`, `install_update()`, `get_current_version()`, `set_channel()` |
+| **Window Manager** | `window_manager.rs` | Window lifecycle, zoom, state persistence | `toggle_always_on_top()`, `set_zoom()`, `save_window_state()`, `minimize_to_tray()` |
 
 ### Platform-Specific Modules
 
