@@ -37,7 +37,10 @@ impl ThemeManager {
             "darker" => Theme::Darker,
             "oled-black" => Theme::OledBlack,
             "custom" => Theme::Custom(String::new()),
-            _ => Theme::Light,
+            _ => {
+                log::warn!("Unknown theme '{}', falling back to Light", name);
+                Theme::Light
+            }
         };
 
         self.current = theme.clone();

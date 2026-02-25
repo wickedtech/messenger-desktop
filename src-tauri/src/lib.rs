@@ -67,8 +67,14 @@ pub fn run() {
             // Initialize theme manager
             let theme_manager = crate::theme_manager::ThemeManager::new(&handle);
 
-            // Initialize spellchecker
-            let spellchecker = crate::spellcheck::SpellcheckManager::new(&handle)?;
+            // Initialize spellchecker (graceful degradation if init fails)
+            let spellchecker = match crate::spellcheck::SpellcheckManager::new(&handle) {
+                Ok(s) => s,
+                Err(e) => {
+                    log::warn!("Spellcheck init failed (disabled): {}", e);
+                    crate::spellcheck::SpellcheckManager::disabled()
+                }
+            };
 
             // Initialize updater
             let updater = crate::updater::UpdaterManager::new(&handle);
