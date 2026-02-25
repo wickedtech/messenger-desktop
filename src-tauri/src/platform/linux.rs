@@ -4,6 +4,7 @@
 use tauri::AppHandle;
 use std::process::Command;
 use std::fs;
+use dirs::home_dir;
 
 /// Initialize Linux-specific features.
 pub fn init(_app: &AppHandle) {
