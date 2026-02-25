@@ -66,6 +66,7 @@
     "windows": [
       {
         "title": "Social Hub",
+        "label": "main",
         "width": 1200,
         "height": 800,
         "resizable": true,

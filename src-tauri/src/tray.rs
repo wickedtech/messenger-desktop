@@ -87,6 +87,12 @@ impl TrayManager {
                 } else {
                     let _ = window.show();
                     let _ = window.set_focus();
+                    
+                    // On macOS, request foreground activation
+                    #[cfg(target_os = "macos")]
+                    {
+                        let _ = app.emit("request-focus", ());
+                    }
                 }
             }
         }
@@ -98,6 +104,12 @@ impl TrayManager {
                 if let Some(window) = app.get_webview_window("main") {
                     let _ = window.show();
                     let _ = window.set_focus();
+                    
+                    // On macOS, request foreground activation
+                    #[cfg(target_os = "macos")]
+                    {
+                        let _ = app.emit("request-focus", ());
+                    }
                 }
             }
             "new_message" => {

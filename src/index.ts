@@ -60,6 +60,28 @@ function setupEventListeners() {
         console.log('Spellcheck language set:', event.payload);
     });
     
+    // Listen for navigate events
+    listen('navigate', (event) => {
+        const hash = event.payload as string;
+        window.location.hash = hash;
+        console.log('Navigated to:', hash);
+    });
+    
+    // Listen for global shortcut trigger events
+    listen('global-shortcut-trigger', (event) => {
+        const action = event.payload as string;
+        if (action === 'new_message') {
+            console.log('Global shortcut: new_message');
+            // TODO: Implement new message shortcut logic
+        } else if (action === 'mute') {
+            console.log('Global shortcut: mute');
+            // TODO: Implement mute shortcut logic
+        } else if (action === 'dnd') {
+            console.log('Global shortcut: dnd');
+            // TODO: Implement Do Not Disturb shortcut logic
+        }
+    });
+    
     // Handle window close
     getCurrentWindow().onCloseRequested(async (event) => {
         console.log('Window close requested');
