@@ -174,7 +174,13 @@ pub fn switch_account(state: tauri::State<'_, std::sync::Mutex<AccountManager>>,
 /// Tauri command: List all accounts.
 #[tauri::command]
 pub fn list_accounts(state: tauri::State<'_, std::sync::Mutex<AccountManager>>) -> Vec<Account> {
-    state.lock().map_err(|e| format!("Lock error: {}", e))?.list_accounts()
+    match state.lock() {
+        Ok(guard) => guard.list_accounts(),
+        Err(e) => {
+            log::error!("Lock error: {}", e);
+            Vec::new()
+        }
+    }
 }
 
 /// Tauri command: Set profile picture for an account.
@@ -195,7 +201,13 @@ pub fn set_session_token(state: tauri::State<'_, std::sync::Mutex<AccountManager
 #[tauri::command]
 #[allow(dead_code)]
 pub fn get_session_token(state: tauri::State<'_, std::sync::Mutex<AccountManager>>, id: String) -> Option<String> {
-    state.lock().map_err(|e| format!("Lock error: {}", e))?.get_session_token(&id)
+    match state.lock() {
+        Ok(guard) => guard.get_session_token(&id),
+        Err(e) => {
+            log::error!("Lock error: {}", e);
+            None
+        }
+    }
 }
 
 /// Tauri command: Update last sync time for an account.
