@@ -1,11 +1,125 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Messenger Desktop</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Social Hub</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+      background: #0d0d0d;
+      color: #f0f0f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      max-width: 600px;
+      width: 100%;
+      padding: 40px 20px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .tagline {
+      color: #888;
+      font-size: 0.9rem;
+      margin-bottom: 40px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .card {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 16px;
+      padding: 28px 20px;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+    }
+    .card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 20px rgba(255,255,255,0.08);
+      border-color: #444;
+    }
+    .icon {
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+    }
+    .platform-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .privacy-tag {
+      font-size: 0.75rem;
+      color: #4caf50;
+    }
+    .footer {
+      color: #555;
+      font-size: 0.75rem;
+      margin-top: 16px;
+    }
+    .last-used {
+      color: #888;
+      font-size: 0.8rem;
+      margin-bottom: 20px;
+      min-height: 1.2em;
+    }
+    #error-msg {
+      display: none;
+      color: #ef5350;
+      margin-top: 12px;
+      font-size: 0.85rem;
+    }
+  </style>
 </head>
 <body>
-  <!-- WebView loads messenger.com, not this file -->
+  <div class="container" id="selector">
+    <h1>Social Hub</h1>
+    <p class="tagline">Privacy-first messaging</p>
+    
+    <div id="last-platform" class="last-used"></div>
+    
+    <div class="grid">
+      <div class="card" data-platform="Instagram">
+        <div class="icon">📸</div>
+        <div class="platform-name">Instagram</div>
+        <div class="privacy-tag">Isolated session · No tracking</div>
+      </div>
+      
+      <div class="card" data-platform="Messenger">
+        <div class="icon">💬</div>
+        <div class="platform-name">Messenger</div>
+        <div class="privacy-tag">Zero cookies stored · Private</div>
+      </div>
+      
+      <div class="card" data-platform="Facebook">
+        <div class="icon">👥</div>
+        <div class="platform-name">Facebook</div>
+        <div class="privacy-tag">Session isolated · No logs</div>
+      </div>
+      
+      <div class="card" data-platform="X">
+        <div class="icon">𝕏</div>
+        <div class="platform-name">X</div>
+        <div class="privacy-tag">No telemetry · Private mode</div>
+      </div>
+    </div>
+    
+    <div id="error-msg"></div>
+    
+    <p class="footer">Your sessions are isolated. No data crosses platforms.</p>
+  </div>
+  
+  <script type="module" src="platform-selector.js"></script>
 </body>
 </html>
