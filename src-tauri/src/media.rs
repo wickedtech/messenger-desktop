@@ -31,6 +31,7 @@ pub struct MediaFile {
 }
 
 /// Media manager state.
+#[allow(dead_code)]
 pub struct MediaManager {
     app: AppHandle,
     permissions: MediaPermissions,
@@ -39,6 +40,7 @@ pub struct MediaManager {
 
 impl MediaManager {
     /// Create a new MediaManager.
+    #[allow(dead_code)]
     pub fn new(app: &AppHandle) -> Result<Self> {
         let media_dir = app.path().app_data_dir()
             .context("Failed to resolve app data directory")?
@@ -60,6 +62,7 @@ impl MediaManager {
     }
     
     /// Setup WebView permissions for messenger.com domain.
+    #[allow(dead_code)]
     pub fn setup_permissions(&self) {
         log::info!("Configuring WebView media permissions for messenger.com");
         // Placeholder for WebView permission configuration
