@@ -492,29 +492,29 @@ pub async fn handle_notification(
     Ok(())
 }
 
-/// Show a native notification
+/// Show a notification using the notification plugin
 #[tauri::command]
 #[specta::specta]
 pub async fn show_notification(
     title: String,
     body: String,
     icon_url: Option<String>,
+    app: tauri::AppHandle,
     notification_service: tauri::State<'_, NotificationService>,
 ) -> Result<(), String> {
-    let data = NotificationData {
-        id: format!("notification_{}", chrono::Utc::now().timestamp()),
-        title,
-        body,
-        icon_url,
-        conversation_id: None,
-        sender_name: None,
-        sender_avatar: None,
-        timestamp: None,
-        require_interaction: false,
-        silent: false,
-    };
-
-    notification_service.show_notification(data).await.map_err(|e| e.to_string())
+    use tauri_plugin_notification::NotificationExt;
+    
+    let state = notification_service.state.read().await;
+    if !state.settings.enabled || state.settings.do_not_disturb {
+        return Ok(());
+    }
+    drop(state);
+    
+    let mut builder = app.notification().builder().title(&title);
+    if !body.is_empty() {
+        builder = builder.body(&body);
+    }
+    builder.show().map_err(|e| e.to_string())
 }
 
 /// Set Do Not Disturb mode

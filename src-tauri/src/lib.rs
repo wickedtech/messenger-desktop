@@ -1,4 +1,7 @@
-use tauri::Manager;
+// lib.rs - Main Tauri library for Messenger Desktop
+// This module orchestrates all Tauri commands and integrates submodules
+
+use tauri::{Manager, WebviewWindowBuilder, WebviewUrl};
 
 // Import all the command functions
 use crate::notifications::{
@@ -42,6 +45,48 @@ mod window_manager;
 
 // Clipboard commands and print command are defined in their respective modules
 
+// Notification interceptor JS — injected into EVERY navigation including external URLs
+const NOTIFICATION_INTERCEPTOR_JS: &str = r#"
+(function() {
+    // Guard: only patch once per context
+    if (window.__MESSENGER_DESKTOP_PATCHED__) { return; }
+    window.__MESSENGER_DESKTOP_PATCHED__ = true;
+
+    const OriginalNotification = window.Notification;
+
+    // Override window.Notification
+    window.Notification = function(title, options) {
+        options = options || {};
+        // Route to Tauri handle_notification command
+        if (window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke) {
+            window.__TAURI__.core.invoke('handle_notification', {
+                title: String(title),
+                options: {
+                    body: options.body || '',
+                    icon: options.icon || null,
+                    tag: options.tag || null,
+                    silent: options.silent || false
+                }
+            }).catch(function(e) { console.warn('[notification] invoke failed:', e); });
+        } else if (OriginalNotification) {
+            return new OriginalNotification(title, options);
+        }
+    };
+
+    window.Notification.permission = 'granted';
+    window.Notification.requestPermission = function() {
+        return Promise.resolve('granted');
+    };
+
+    Object.defineProperty(window.Notification, 'permission', {
+        get: function() { return 'granted'; },
+        configurable: true
+    });
+
+    console.log('[messenger-desktop] Notification interceptor active');
+})();
+"#;
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -56,6 +101,19 @@ pub fn run() {
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_clipboard_manager::init())
         .setup(|app| {
+            // Notification interceptor JS — injected into EVERY navigation including external URLs
+            let _main_window = WebviewWindowBuilder::new(
+                app,
+                "main",
+                WebviewUrl::App("index.html".into()),
+            )
+            .title("Social Hub")
+            .inner_size(1200.0, 800.0)
+            .resizable(true)
+            .initialization_script(NOTIFICATION_INTERCEPTOR_JS)
+            .build()
+            .expect("failed to create main window");
+
             let handle = app.handle().clone();
             let app_data_dir = app
                 .path()

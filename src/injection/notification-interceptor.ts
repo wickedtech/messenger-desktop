@@ -1,63 +1,31 @@
 // notification-interceptor.ts
 // Intercepts window.Notification to redirect notifications to Tauri
+// Notification interceptor for Tauri v2 webview injection
+// Intercepts window.Notification and routes to Tauri handle_notification command
 
-class NotificationInterceptor {
-  private originalNotification: any;
-  private enabled: boolean = true;
+(function() {
+    if ((window as any).__MESSENGER_DESKTOP_PATCHED__) { return; }
+    (window as any).__MESSENGER_DESKTOP_PATCHED__ = true;
 
-  constructor() {
-    this.originalNotification = window.Notification;
-  }
+    const OriginalNotification = (window as any).Notification;
+    const tauriCore = (window as any).__TAURI__?.core;
 
-  public intercept(): void {
-    // @ts-ignore
-    window.Notification = (title: string, options?: NotificationOptions) => {
-      if (!this.enabled) {
-        return null;
-      }
-
-      try {
-        // @ts-ignore
-        (window as any).__TAURI__.invoke('show_notification', {
-          title,
-          body: options?.body || '',
-          icon: options?.icon || '',
-          tag: options?.tag || ''
-        });
-      } catch (error) {
-        console.error('[notification] Failed to show notification:', error);
-      }
-
-      return null;
+    (window as any).Notification = function(title: string, options: any = {}) {
+        if (tauriCore?.invoke) {
+            tauriCore.invoke('handle_notification', {
+                title: String(title),
+                options: {
+                    body: options?.body || '',
+                    icon: options?.icon || null,
+                    tag: options?.tag || null,
+                    silent: options?.silent || false,
+                }
+            }).catch((e: any) => console.warn('[notification] Tauri invoke failed:', e));
+        } else if (OriginalNotification) {
+            return new OriginalNotification(title, options);
+        }
     };
 
-    // @ts-ignore
-    window.Notification.requestPermission = this.originalNotification.requestPermission.bind(this.originalNotification);
-    // @ts-ignore
-    window.Notification.permission = this.originalNotification.permission;
-
-    // Listen for toggle events from Tauri
-    // @ts-ignore
-    (window as any).__TAURI__.event.listen('toggle-notifications', (e: any) => {
-      this.enabled = e.payload;
-      console.log('[notification] Notifications', this.enabled ? 'enabled' : 'disabled');
-    });
-  }
-}
-
-// Global instance
-let interceptor: NotificationInterceptor | null = null;
-
-export function init(): void {
-  if (!interceptor) {
-    try {
-      interceptor = new NotificationInterceptor();
-      interceptor.intercept();
-      console.log('[notification] Interceptor initialized');
-    } catch (error) {
-      console.error('[notification] Failed to initialize interceptor:', error);
-    }
-  } else {
-    console.log('[notification] Interceptor already initialized');
-  }
-}
+    (window as any).Notification.permission = 'granted';
+    (window as any).Notification.requestPermission = () => Promise.resolve('granted' as NotificationPermission);
+})();
