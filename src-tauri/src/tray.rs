@@ -85,6 +85,13 @@ impl TrayManager {
                 if is_visible {
                     let _ = window.hide();
                 } else {
+                    // On macOS, activate the app before showing the window
+                    #[cfg(target_os = "macos")]
+                    {
+                        use tauri::ActivationPolicy;
+                        let _ = app.set_activation_policy(ActivationPolicy::Regular);
+                    }
+                    
                     let _ = window.show();
                     let _ = window.set_focus();
                     
@@ -101,6 +108,13 @@ impl TrayManager {
     fn handle_menu_event(app: &AppHandle, menu_id: &str) {
         match menu_id {
             "open" => {
+                // On macOS, activate the app before showing the window
+                #[cfg(target_os = "macos")]
+                {
+                    use tauri::ActivationPolicy;
+                    let _ = app.set_activation_policy(ActivationPolicy::Regular);
+                }
+                
                 if let Some(window) = app.get_webview_window("main") {
                     let _ = window.show();
                     let _ = window.set_focus();
