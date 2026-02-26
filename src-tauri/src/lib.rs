@@ -179,14 +179,9 @@ pub fn run() {
             let updater = crate::updater::UpdaterManager::new(&handle);
 
             // Initialize tray
-            match crate::tray::TrayManager::new(&handle) {
-                Ok(tray_instance) => {
-                    app.manage(std::sync::Mutex::new(tray_instance));
-                }
-                Err(e) => {
-                    log::warn!("Tray init failed: {}", e);
-                }
-            }
+            let tray = crate::tray::TrayManager::new(&handle)
+                .expect("failed to create tray manager");
+            app.manage(std::sync::Mutex::new(tray));
 
             // Initialize window manager
             let window_manager = crate::window_manager::WindowManager::new(app_data_dir.clone());
